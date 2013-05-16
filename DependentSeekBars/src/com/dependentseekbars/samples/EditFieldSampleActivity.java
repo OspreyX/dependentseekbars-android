@@ -27,7 +27,7 @@ public class EditFieldSampleActivity extends Activity {
     private EditText[] editText;
     private boolean validValue = true;
     private boolean pauseTextChangeListener = false;
-    private int extraBars = 8;
+    private final int ROW_LAYOUT_COUNT = 8;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,197 +51,35 @@ public class EditFieldSampleActivity extends Activity {
         editText[3] = (EditText) findViewById(R.id.editText4);
 
         for (int i = 0; i < 4; i++) {
-            final int num = i;
             manager.addSeekBar(dependentSeekBars[i]);
 
-            final DependentSeekBar seekBar = dependentSeekBars[num];
+            final DependentSeekBar seekBar = dependentSeekBars[i];
             seekBar.setProgress(i);
+            final EditText editField = editText[i];
 
-            seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-                public void onStopTrackingTouch(SeekBar seekBar) {
-                }
-
-                public void onStartTrackingTouch(SeekBar seekBar) {
-                }
-
-                public void onProgressChanged(SeekBar seekBar, int progress,
-                        boolean fromUser) {
-                    pauseTextChangeListener = true;
-                    editText[num].setText("" + seekBar.getProgress());
-                    pauseTextChangeListener = false;
-                }
-            });
-            editText[num].setOnFocusChangeListener(new OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (hasFocus) {
-                        editText[num].setSelection(editText[num].getText().length());
-                    }
-                }
-            });
-            editText[num].setOnEditorActionListener(new OnEditorActionListener() {
-                @Override
-                public boolean onEditorAction(TextView v, int actionId,
-                        KeyEvent event) {
-                    if (!validValue) {
-                        pauseTextChangeListener = true;
-                        editText[num].setTextColor(Color.BLACK);
-                        editText[num].setText("" + seekBar.getProgress());
-                        pauseTextChangeListener = false;
-                        // manager.setShiftingAllowed(true);
-                        validValue = true;
-                    }
-                    return false;
-                }
-            });
-            editText[num].addTextChangedListener(new TextWatcher() {
-                @Override
-                public void onTextChanged(CharSequence s, int start,
-                        int before, int count) {
-                    if (pauseTextChangeListener) {
-                        return;
-                    }
-                    if (editText[num].hasFocus()) {
-                        try {
-                            pauseTextChangeListener = true;
-                            if (seekBar.moveTo(Integer.parseInt(s.toString()))) {
-                                isValidValue(seekBar, editText[num], s);
-                            } else {
-                                notValidValue();
-                            }
-                            pauseTextChangeListener = false;
-                        } catch (Exception e) {
-                            notValidValue();
-                            pauseTextChangeListener = false;
-                        }
-                    }
-                }
-
-                private void isValidValue(final SeekBar iBar,
-                        final EditText iValue, CharSequence s) {
-                    // iBar.setProgress(Integer.parseInt(s.toString()));
-                    iValue.setText(s.toString());
-                    iValue.setTextColor(Color.BLACK);
-                    iValue.setSelection(iValue.getText().length());
-                    validValue = true;
-                }
-
-                private void notValidValue() {
-                    validValue = false;
-                    editText[num].setTextColor(Color.RED);
-                }
-
-                @Override
-                public void beforeTextChanged(CharSequence s, int start,
-                        int count, int after) {
-
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-
-                }
-            });
+            attachListeners(seekBar, editField);
         }
 
-        for (int i = 0; i < extraBars; i++) {
+        for (int i = 0; i < ROW_LAYOUT_COUNT; i++) {
             RelativeLayout rowLayout = (RelativeLayout) getLayoutInflater().inflate(
                     R.layout.editfield_sample_row, null);
             final DependentSeekBar seekBar = (DependentSeekBar) rowLayout.findViewById(R.id.seekbar);
-            manager.addSeekBar(seekBar);
             final EditText editField = (EditText) rowLayout.findViewById(R.id.seekbar_value);
+            manager.addSeekBar(seekBar);
 
             seekBar.setProgress(i + 4);
+            attachListeners(seekBar, editField);
 
-            seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-                public void onStopTrackingTouch(SeekBar seekBar) {
-                }
-
-                public void onStartTrackingTouch(SeekBar seekBar) {
-                }
-
-                public void onProgressChanged(SeekBar seekBar, int progress,
-                        boolean fromUser) {
-                    pauseTextChangeListener = true;
-                    editField.setText("" + seekBar.getProgress());
-                    pauseTextChangeListener = false;
-                }
-            });
-            editField.setOnFocusChangeListener(new OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (hasFocus) {
-                        editField.setSelection(editField.getText().length());
-                    }
-                }
-            });
-            editField.setOnEditorActionListener(new OnEditorActionListener() {
-                @Override
-                public boolean onEditorAction(TextView v, int actionId,
-                        KeyEvent event) {
-                    if (!validValue) {
-                        pauseTextChangeListener = true;
-                        editField.setTextColor(Color.BLACK);
-                        editField.setText("" + seekBar.getProgress());
-                        pauseTextChangeListener = false;
-                        validValue = true;
-                    }
-                    return false;
-                }
-            });
-            editField.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void onTextChanged(CharSequence s, int start,
-                        int before, int count) {
-                    if (pauseTextChangeListener) {
-                        return;
-                    }
-                    if (editField.hasFocus()) {
-                        try {
-                            pauseTextChangeListener = true;
-                            if (seekBar.moveTo(Integer.parseInt(s.toString()))) {
-                                isValidValue(seekBar, editField, s);
-                            } else {
-                                notValidValue();
-                            }
-                            pauseTextChangeListener = false;
-                        } catch (Exception e) {
-                            notValidValue();
-                            pauseTextChangeListener = false;
-                        }
-                    }
-                }
-
-                private void isValidValue(final SeekBar iBar,
-                        final EditText iValue, CharSequence s) {
-                    iValue.setText(s.toString());
-                    iValue.setTextColor(Color.BLACK);
-                    iValue.setSelection(iValue.getText().length());
-                    validValue = true;
-                }
-
-                private void notValidValue() {
-                    validValue = false;
-                    editField.setTextColor(Color.RED);
-                }
-
-                @Override
-                public void beforeTextChanged(CharSequence s, int start,
-                        int count, int after) {
-
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-
-                }
-            });
+            // Add the new row to the layout
             mainLayout.addView(rowLayout);
+
+            // Set up some dependencies so that the rows are actually used
             manager.getSeekBar(0).addDependencies(DependentSeekBar.LESS_THAN,
                     seekBar);
 
         }
 
+        // Set up dependencies so that 1 < 2,3,4 ; 2,3 < 4
         manager.getSeekBar(0).addDependencies(DependentSeekBar.LESS_THAN, 1, 2,
                 3);
         manager.getSeekBar(3).addDependencies(DependentSeekBar.GREATER_THAN, 2);
@@ -249,5 +87,87 @@ public class EditFieldSampleActivity extends Activity {
 
         manager.setShiftingAllowed(true);
 
+    }
+
+    private void attachListeners(final DependentSeekBar seekBar, final EditText editField) {
+        seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            public void onProgressChanged(SeekBar seekBar, int progress,
+                                          boolean fromUser) {
+                pauseTextChangeListener = true;
+                editField.setText("" + seekBar.getProgress());
+                pauseTextChangeListener = false;
+            }
+        });
+        editField.setOnFocusChangeListener(new OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    editField.setSelection(editField.getText().length());
+                }
+            }
+        });
+        editField.setOnEditorActionListener(new OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId,
+                                          KeyEvent event) {
+                if (!validValue) {
+                    pauseTextChangeListener = true;
+                    editField.setTextColor(Color.BLACK);
+                    editField.setText("" + seekBar.getProgress());
+                    pauseTextChangeListener = false;
+                    validValue = true;
+                }
+                return false;
+            }
+        });
+        editField.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+                if (pauseTextChangeListener) {
+                    return;
+                }
+                if (editField.hasFocus()) {
+                    try {
+                        pauseTextChangeListener = true;
+                        if (seekBar.moveTo(Integer.parseInt(s.toString()))) {
+                            isValidValue(seekBar, editField, s);
+                        } else {
+                            notValidValue();
+                        }
+                        pauseTextChangeListener = false;
+                    } catch (Exception e) {
+                        notValidValue();
+                        pauseTextChangeListener = false;
+                    }
+                }
+            }
+
+            private void isValidValue(final SeekBar iBar,
+                                      final EditText iValue, CharSequence s) {
+                iValue.setText(s.toString());
+                iValue.setTextColor(Color.BLACK);
+                iValue.setSelection(iValue.getText().length());
+                validValue = true;
+            }
+
+            private void notValidValue() {
+                validValue = false;
+                editField.setTextColor(Color.RED);
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
     }
 }
