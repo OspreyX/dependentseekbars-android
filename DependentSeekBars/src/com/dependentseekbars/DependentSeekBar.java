@@ -75,9 +75,9 @@ public class DependentSeekBar extends SeekBar {
     }
 
     /**
-     * Sets the node which
+     * Sets node from the dependency graph which references this DependentSeekBar.
      * 
-     * @param n
+     * @param n the node from the dependency graph
      */
     void setNode(Node n) {
         node = n;
@@ -245,11 +245,11 @@ public class DependentSeekBar extends SeekBar {
      * function updates the progress of the seekBar and returns the amount that
      * it has changed by.
      * 
-     * @param displacement
+     * @param displacement the distance the seek bar is being requested to move right
      * @return amount that this seekbar has actually moved
      */
     private int canMoveRight(int displacement, boolean checkOnly) {
-        int movementAllowed = 0;
+        int movementAllowed;
         if ((movementAllowed = canMoveRight(displacement, oldProgress,
                 checkOnly)) > 0) {
             if (!checkOnly) {
@@ -272,8 +272,8 @@ public class DependentSeekBar extends SeekBar {
      * desired value will conflict with dependencies and asking the dependent
      * sliders to move as far as necessary.
      * 
-     * @param displacement
-     * @param oldProgress
+     * @param displacement the distance the seek bar is being requested to move right
+     * @param oldProgress the current progress of the seek bar
      * @return 0 when it cannot move. A positive integer representing the
      *         maximum amount it is allowed to move.
      */
@@ -319,9 +319,7 @@ public class DependentSeekBar extends SeekBar {
                     continue;
                 }
 
-                int temp = 0;
-
-                temp = displacement
+                int temp = displacement
                         - (desiredProgress - child.getProgress() + 1);
 
                 // Determines how much the current slider can move if the child
@@ -351,11 +349,11 @@ public class DependentSeekBar extends SeekBar {
      * function updates the progress of the seekBar and returns the amount that
      * it has changed by.
      * 
-     * @param displacement
+     * @param displacement the distance the seek bar is being requested to move right
      * @return amount that this seekbar has actually moved
      */
     private int canMoveLeft(int displacement, boolean checkOnly) {
-        int movementAllowed = 0;
+        int movementAllowed;
         if ((movementAllowed = canMoveLeft(displacement, oldProgress, checkOnly)) > 0) {
             if (!checkOnly) {
                 pauseProgressChangedListener = true;
@@ -377,8 +375,8 @@ public class DependentSeekBar extends SeekBar {
      * desired value will conflict with dependencies and asking the dependent
      * sliders to move as far as necessary.
      * 
-     * @param displacement
-     * @param oldProgress
+     * @param displacement the distance the seek bar is being requested to move right
+     * @param oldProgress the current progress of the seek bar
      * @return 0 when it cannot move. A positive integer representing the
      *         maximum amount it is allowed to move.
      */
@@ -423,9 +421,7 @@ public class DependentSeekBar extends SeekBar {
                     continue;
                 }
 
-                int temp = 0;
-
-                temp = displacement
+                int temp = displacement
                         - (parent.getProgress() - desiredProgress + 1);
 
                 // Determines how much the current slider can move if the child
@@ -459,7 +455,7 @@ public class DependentSeekBar extends SeekBar {
      * which denotes whether the seek bar was able to move to the given value
      * with its dependencies.
      * 
-     * @param newProgress
+     * @param newProgress the desired progress to move the seek bar to
      * @return true iff the seek bar was able to successfully move to the new
      *         progress
      */
@@ -489,11 +485,12 @@ public class DependentSeekBar extends SeekBar {
      * Add dependencies between the currentRestrictedSeekBar and the
      * RestrictedSeekBars given. The dependency relationship is determined by
      * the provided integer value.
+     *
+     * @param relationship the relationship the current DependentSeekBar will have with the given DependentSeekBar's
+     * @param indices the indices of the DependentSeekBar's to create dependencies with
+     * @return true iff the dependencies were created successfully
      * 
-     * @param restrictedSeekBars
-     * @return
-     * 
-     * @see #addDependencies(int, RestrictedSeekBar...)
+     * @see #addDependencies(int, DependentSeekBar...)
      */
     public boolean addDependencies(int relationship, int... indices) {
 
@@ -512,9 +509,10 @@ public class DependentSeekBar extends SeekBar {
      * Add dependencies between the currentRestrictedSeekBar and the
      * RestrictedSeekBars given. The dependency relationship is determined by
      * the provided integer value.
-     * 
-     * @param restrictedSeekBars
-     * @return
+     *
+     * @param relationship the relationship the current DependentSeekBar will have with the given DependentSeekBar's
+     * @param dependentSeekBars the DependentSeekBar's to create dependencies with
+     * @return true iff the dependencies were created successfully
      * 
      * @see #addDependencies(int, int...)
      */
@@ -532,15 +530,21 @@ public class DependentSeekBar extends SeekBar {
 
     }
 
-    // TODO rename
+    /**
+     * Get the maximum progress which the seek bar can move to given its dependencies.
+     *
+     * @return maximum progress which the seek bar can move to given its dependencies
+     */
     public int getRestrictedMax() {
-        int maxDisplacement = canMoveRight(getMax() - getProgress() + 1, true);
-        return maxDisplacement;
+        return canMoveRight(getMax() - getProgress() + 1, true);
     }
 
-    // TODO rename
+    /**
+     * Get the minimum progress which the seek bar can move to given its dependencies
+     *
+     * @return minimum progress which the seek bar can move to given its dependencies
+     */
     public int getRestrictedMin() {
-        int maxDisplacement = canMoveLeft(getProgress() + 1, true);
-        return maxDisplacement;
+        return canMoveLeft(getProgress() + 1, true);
     }
 }
