@@ -11,7 +11,7 @@ import org.robolectric.RobolectricTestRunner;
 import com.dependentseekbars.DependentSeekBar;
 import com.dependentseekbars.DependentSeekBarManager;
 import com.dependentseekbars.R;
-import com.dependentseekbars.test.RestrictedSlidersActivity;
+import com.dependentseekbars.samples.RestrictedSlidersActivity;
 
 @RunWith(RobolectricTestRunner.class)
 public class DependentSeekBarsTest {
