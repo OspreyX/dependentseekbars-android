@@ -492,15 +492,15 @@ public class DependentSeekBar extends SeekBar {
      * 
      * @see #addDependencies(int, DependentSeekBar...)
      */
-    public boolean addDependencies(int relationship, int... indices) {
+    public void addDependencies(int relationship, int... indices) {
 
         switch (relationship) {
         case LESS_THAN:
-            return manager.addLessThanDependencies(this, indices);
+            manager.addLessThanDependencies(this, indices);
+            break;
         case GREATER_THAN:
-            return manager.addGreaterThanDependencies(this, indices);
-        default:
-            return false;
+            manager.addGreaterThanDependencies(this, indices);
+            break;
         }
 
     }
@@ -516,16 +516,16 @@ public class DependentSeekBar extends SeekBar {
      * 
      * @see #addDependencies(int, int...)
      */
-    public boolean addDependencies(int relationship,
+    public void addDependencies(int relationship,
             DependentSeekBar... dependentSeekBars) {
 
         switch (relationship) {
         case LESS_THAN:
-            return manager.addLessThanDependencies(this, dependentSeekBars);
+            manager.addLessThanDependencies(this, dependentSeekBars);
+            break;
         case GREATER_THAN:
-            return manager.addGreaterThanDependencies(this, dependentSeekBars);
-        default:
-            return false;
+            manager.addGreaterThanDependencies(this, dependentSeekBars);
+            break;
         }
 
     }

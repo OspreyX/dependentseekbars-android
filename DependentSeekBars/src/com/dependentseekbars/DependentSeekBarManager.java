@@ -233,20 +233,18 @@ public class DependentSeekBarManager extends LinearLayout {
      *        have greater progresses than the dependent DependentSeekBar
      * @return
      */
-    boolean addLessThanDependencies(DependentSeekBar dependentSeekBar, int[] limitingIndices) {
+    void addLessThanDependencies(DependentSeekBar dependentSeekBar, int[] limitingIndices) {
         checkIndices(limitingIndices);
-        
-        return dg.addMaxDependencies(dependentSeekBar, getSubclassedSeekBars(limitingIndices));
+        dg.addMaxDependencies(dependentSeekBar, getSubclassedSeekBars(limitingIndices));
     }
     
-    boolean addLessThanDependencies(DependentSeekBar dependentSeekBar, DependentSeekBar[] limiting) {
+    void addLessThanDependencies(DependentSeekBar dependentSeekBar, DependentSeekBar[] limiting) {
         
         for (DependentSeekBar limit : limiting) {
             if (limit == null || !seekBars.contains(limit))
-                return false;
+                throw new NullPointerException();
         }
-        
-        return dg.addMaxDependencies(dependentSeekBar, getSubclassedSeekBars(limiting));
+        dg.addMaxDependencies(dependentSeekBar, getSubclassedSeekBars(limiting));
     }
     
     /**
@@ -264,20 +262,19 @@ public class DependentSeekBarManager extends LinearLayout {
      *        have greater progresses than the dependent DependentSeekBar
      * @return
      */
-    boolean addGreaterThanDependencies(DependentSeekBar dependentSeekBar, int[] limitingIndices) {
+    void addGreaterThanDependencies(DependentSeekBar dependentSeekBar, int[] limitingIndices) {
         checkIndices(limitingIndices);
-        
-        return dg.addMinDependencies(dependentSeekBar, getSubclassedSeekBars(limitingIndices));
+        dg.addMinDependencies(dependentSeekBar, getSubclassedSeekBars(limitingIndices));
     }
     
-    boolean addGreaterThanDependencies(DependentSeekBar dependentSeekBar, DependentSeekBar[] limiting) {
+    void addGreaterThanDependencies(DependentSeekBar dependentSeekBar, DependentSeekBar[] limiting) {
         
         for (DependentSeekBar limit : limiting) {
             if (limit == null || !seekBars.contains(limit))
-                return false;
+                throw new NullPointerException();
         }
         
-        return dg.addMinDependencies(dependentSeekBar, getSubclassedSeekBars(limiting));
+        dg.addMinDependencies(dependentSeekBar, getSubclassedSeekBars(limiting));
     }
     
     private DependentSeekBar[] getSubclassedSeekBars(DependentSeekBar[] dependentSeekBars) {
