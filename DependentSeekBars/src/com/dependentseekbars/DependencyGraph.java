@@ -168,7 +168,7 @@ public class DependencyGraph {
 
     public boolean checkForMinCycle(Node limitingNode) {
         for (Node child : limitingNode.getParents()) {
-            if (checkForMaxCycle(limitingNode, child))
+            if (checkForMinCycle(limitingNode, child))
                 return true;
         }
         return false;
