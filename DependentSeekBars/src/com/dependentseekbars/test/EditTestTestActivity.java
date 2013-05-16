@@ -16,7 +16,7 @@ import android.widget.TextView.OnEditorActionListener;
 
 import com.dependentseekbars.DependentSeekBar;
 import com.dependentseekbars.DependentSeekBarManager;
-import com.example.restrictedsliders.R;
+import com.dependentseekbars.R;
 
 public class EditTestTestActivity extends Activity {
     private DependentSeekBarManager rsw;

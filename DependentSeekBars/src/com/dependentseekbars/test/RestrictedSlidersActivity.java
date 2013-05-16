@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.widget.LinearLayout;
 
 import com.dependentseekbars.DependentSeekBarManager;
-import com.example.restrictedsliders.R;
+import com.dependentseekbars.R;
 
 public class RestrictedSlidersActivity extends Activity {
     private DependentSeekBarManager rsw1;
