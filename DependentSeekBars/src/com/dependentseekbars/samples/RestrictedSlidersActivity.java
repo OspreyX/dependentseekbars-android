@@ -1,4 +1,4 @@
-package com.dependentseekbars.test;
+package com.dependentseekbars.samples;
 
 import android.app.Activity;
 import android.os.Bundle;

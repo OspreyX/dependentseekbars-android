@@ -5,7 +5,7 @@
  * should not be modified by hand.
  */
 
-package com.example.restrictedsliders;
+package com.dependentseekbars;
 
 public final class R {
     public static final class attr {
@@ -22,20 +22,30 @@ containing a value of this type.
         public static int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static int editText1=0x7f060001;
-        public static int editText2=0x7f060002;
-        public static int editText3=0x7f060003;
-        public static int editText4=0x7f060004;
-        public static int restrictedSeekWidget1=0x7f060000;
-        public static int restrictedSeekWidget2=0x7f060007;
-        public static int restrictedSeekWidget3=0x7f060009;
-        public static int tab1=0x7f060005;
-        public static int tab2=0x7f060006;
-        public static int tab3=0x7f060008;
+        public static int editText1=0x7f060002;
+        public static int editText2=0x7f060004;
+        public static int editText3=0x7f060006;
+        public static int editText4=0x7f060008;
+        public static int period_entry_frame=0x7f060009;
+        public static int period_label=0x7f06000b;
+        public static int restrictedSeekWidget1=0x7f06000e;
+        public static int restrictedSeekWidget2=0x7f060010;
+        public static int restrictedSeekWidget3=0x7f060012;
+        public static int seekBar1=0x7f060001;
+        public static int seekBar2=0x7f060003;
+        public static int seekBar3=0x7f060005;
+        public static int seekBar4=0x7f060007;
+        public static int seekbar=0x7f06000c;
+        public static int seekbar_value=0x7f06000a;
+        public static int slider_layout=0x7f060000;
+        public static int tab1=0x7f06000d;
+        public static int tab2=0x7f06000f;
+        public static int tab3=0x7f060011;
     }
     public static final class layout {
-        public static int edittest_test=0x7f030000;
-        public static int test=0x7f030001;
+        public static int editfield_sample_layout=0x7f030000;
+        public static int editfield_sample_row=0x7f030001;
+        public static int test=0x7f030002;
     }
     public static final class string {
         public static int app_name=0x7f040000;
@@ -76,7 +86,7 @@ containing a value of this type.
            <colgroup align="left" />
            <colgroup align="left" />
            <tr><th>Attribute</th><th>Description</th></tr>
-           <tr><td><code>{@link #DependentSeekBarManager_spacing com.example.restrictedsliders:spacing}</code></td><td></td></tr>
+           <tr><td><code>{@link #DependentSeekBarManager_spacing com.dependentseekbars:spacing}</code></td><td></td></tr>
            </table>
            @see #DependentSeekBarManager_spacing
          */
@@ -84,7 +94,7 @@ containing a value of this type.
             0x7f010000
         };
         /**
-          <p>This symbol is the offset where the {@link com.example.restrictedsliders.R.attr#spacing}
+          <p>This symbol is the offset where the {@link com.dependentseekbars.R.attr#spacing}
           attribute's value can be found in the {@link #DependentSeekBarManager} array.
 
 

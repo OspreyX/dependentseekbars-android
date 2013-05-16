@@ -10,7 +10,6 @@ import android.util.AttributeSet;
 import android.widget.LinearLayout;
 
 import com.dependentseekbars.DependencyGraph.Node;
-import com.example.restrictedsliders.R;
 
 /**
  * A DependentSeekBarManager is a collection of {@link RestrictedSeekBar}s which allows you to create relationships so that the progress of
