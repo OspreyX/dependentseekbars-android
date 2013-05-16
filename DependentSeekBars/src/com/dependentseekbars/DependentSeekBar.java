@@ -17,6 +17,8 @@ public class DependentSeekBar extends SeekBar {
     private int tempProgress = -1;
     private boolean useTempProgress = false;
     private boolean pauseProgressChangedListener = false;
+
+    // Used for creating output strings for recursive calls to make reading easier
     private String outputBuffer = "";
 
     // Relationship constants
