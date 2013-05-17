@@ -9,6 +9,10 @@ import android.widget.SeekBar;
 
 import com.dependentseekbars.DependencyGraph.Node;
 
+/**
+ * Type of {@link SeekBar} used for adding Dependencies.
+ * 
+ */
 public class DependentSeekBar extends SeekBar {
     public static final String TAG = "DependentSeekBar";
     private DependentSeekBarManager manager;
@@ -18,19 +22,39 @@ public class DependentSeekBar extends SeekBar {
     private boolean useTempProgress = false;
     private boolean pauseProgressChangedListener = false;
 
-    // Used for creating output strings for recursive calls to make reading easier
+    // Used for creating output strings for recursive calls to make reading
+    // easier
     private String outputBuffer = "";
 
     // Relationship constants
     public static final int LESS_THAN = 0;
     public static final int GREATER_THAN = 1;
 
+    /**
+     * Creates a DependentSeekBar and adds it to the provided
+     * {@link DependentSeekBarManager}.
+     * 
+     * @param context
+     * @param manager The {@link DependentSeekBarManager} that this
+     *        DependentSeekBar will be added to.
+     */
     public DependentSeekBar(Context context, DependentSeekBarManager manager) {
         super(context);
         this.manager = manager;
         init();
     }
 
+    /**
+     * Creates a DependentSeekBar, and adds it to the provided
+     * {@link DependentSeekBarManager}. Sets the seek bar's progress and maximum
+     * progress as well.
+     * 
+     * @param context
+     * @param manager The {@link DependentSeekBarManager} that this
+     *        DependentSeekBar will be added to.
+     * @param progress The progress value to initialize the DependentSeekBar to.
+     * @param maximum The maximum progress value to set on the DependentSeekBar.
+     */
     public DependentSeekBar(Context context, DependentSeekBarManager manager,
             int progress, int maximum) {
         super(context);
@@ -75,7 +99,8 @@ public class DependentSeekBar extends SeekBar {
     }
 
     /**
-     * Sets node from the dependency graph which references this DependentSeekBar.
+     * Sets node from the dependency graph which references this
+     * DependentSeekBar.
      * 
      * @param n the node from the dependency graph
      */
@@ -120,7 +145,7 @@ public class DependentSeekBar extends SeekBar {
                     l.onProgressChanged(seekBar, progress, fromUser);
                     return;
                 }
-                
+
                 outputBuffer = "";
 
                 Log.e("DependentSeekBar", "attempt progress change to "
@@ -174,6 +199,8 @@ public class DependentSeekBar extends SeekBar {
         });
     }
 
+    // Similar to super.getProgress() but returns tempProgress if only a check
+    // is being performed
     @Override
     public int getProgress() {
         if (useTempProgress) {
@@ -182,6 +209,8 @@ public class DependentSeekBar extends SeekBar {
         return super.getProgress();
     }
 
+    // When only a check is performed, this function will set useTempProgress to
+    // true
     private void useTempProgress() {
         if (!useTempProgress) {
             tempProgress = getProgress();
@@ -191,6 +220,23 @@ public class DependentSeekBar extends SeekBar {
 
     boolean usingTempProgress() {
         return useTempProgress;
+    }
+
+    /*
+     * Used for doing an actual progress movement faster by using the previously
+     * calculated tempProgress values
+     */
+    void moveToTempProgress() {
+        Log.e(TAG, "tempProgress=" + tempProgress);
+        oldProgress = tempProgress;
+
+        pauseProgressChangedListener = true;
+        setProgress(oldProgress);
+        pauseProgressChangedListener = false;
+
+        useTempProgress = false;
+
+        moveDependenciesToTempProgress();
     }
 
     void moveDependenciesToTempProgress() {
@@ -208,19 +254,8 @@ public class DependentSeekBar extends SeekBar {
         }
     }
 
-    void moveToTempProgress() {
-        Log.e(TAG, "tempProgress=" + tempProgress);
-        oldProgress = tempProgress;
-
-        pauseProgressChangedListener = true;
-        setProgress(oldProgress);
-        pauseProgressChangedListener = false;
-
-        useTempProgress = false;
-
-        moveDependenciesToTempProgress();
-    }
-
+    // recursively clears all tempProgresses on all possible DependentSeekBars
+    // that could have been used
     void clearTempProgress() {
         useTempProgress = false;
 
@@ -245,7 +280,8 @@ public class DependentSeekBar extends SeekBar {
      * function updates the progress of the seekBar and returns the amount that
      * it has changed by.
      * 
-     * @param displacement the distance the seek bar is being requested to move right
+     * @param displacement the distance the seek bar is being requested to move
+     *        right
      * @return amount that this seekbar has actually moved
      */
     private int canMoveRight(int displacement, boolean checkOnly) {
@@ -272,7 +308,8 @@ public class DependentSeekBar extends SeekBar {
      * desired value will conflict with dependencies and asking the dependent
      * sliders to move as far as necessary.
      * 
-     * @param displacement the distance the seek bar is being requested to move right
+     * @param displacement the distance the seek bar is being requested to move
+     *        right
      * @param oldProgress the current progress of the seek bar
      * @return 0 when it cannot move. A positive integer representing the
      *         maximum amount it is allowed to move.
@@ -349,7 +386,8 @@ public class DependentSeekBar extends SeekBar {
      * function updates the progress of the seekBar and returns the amount that
      * it has changed by.
      * 
-     * @param displacement the distance the seek bar is being requested to move right
+     * @param displacement the distance the seek bar is being requested to move
+     *        right
      * @return amount that this seekbar has actually moved
      */
     private int canMoveLeft(int displacement, boolean checkOnly) {
@@ -375,7 +413,8 @@ public class DependentSeekBar extends SeekBar {
      * desired value will conflict with dependencies and asking the dependent
      * sliders to move as far as necessary.
      * 
-     * @param displacement the distance the seek bar is being requested to move right
+     * @param displacement the distance the seek bar is being requested to move
+     *        right
      * @param oldProgress the current progress of the seek bar
      * @return 0 when it cannot move. A positive integer representing the
      *         maximum amount it is allowed to move.
@@ -446,7 +485,7 @@ public class DependentSeekBar extends SeekBar {
         }
     }
 
-    public void setOutputBuffer(String newBuffer) {
+    private void setOutputBuffer(String newBuffer) {
         outputBuffer = newBuffer;
     }
 
@@ -484,16 +523,21 @@ public class DependentSeekBar extends SeekBar {
     /**
      * Add dependencies between the currentRestrictedSeekBar and the
      * RestrictedSeekBars given. The dependency relationship is determined by
-     * the provided integer value.
-     *
-     * @param relationship the relationship the current DependentSeekBar will have with the given DependentSeekBar's
-     * @param indices the indices of the DependentSeekBar's to create dependencies with
+     * the provided integer value. If there is no {@link DependentSeekBarManager} set,
+     * this function does nothing
+     * 
+     * @param relationship the relationship the current DependentSeekBar will
+     *        have with the given DependentSeekBar's
+     * @param indices the indices of the DependentSeekBar's to create
+     *        dependencies with
      * @return true iff the dependencies were created successfully
      * 
      * @see #addDependencies(int, DependentSeekBar...)
      */
     public void addDependencies(int relationship, int... indices) {
 
+        if (manager == null)
+            return;
         switch (relationship) {
         case LESS_THAN:
             manager.addLessThanDependencies(this, indices);
@@ -502,23 +546,26 @@ public class DependentSeekBar extends SeekBar {
             manager.addGreaterThanDependencies(this, indices);
             break;
         }
-
     }
 
     /**
      * Add dependencies between the currentRestrictedSeekBar and the
      * RestrictedSeekBars given. The dependency relationship is determined by
-     * the provided integer value.
-     *
-     * @param relationship the relationship the current DependentSeekBar will have with the given DependentSeekBar's
-     * @param dependentSeekBars the DependentSeekBar's to create dependencies with
+     * the provided integer value. If there is no {@link DependentSeekBarManager} set,
+     * this function does nothing
+     * 
+     * @param relationship the relationship the current DependentSeekBar will
+     *        have with the given DependentSeekBar's
+     * @param dependentSeekBars the DependentSeekBar's to create dependencies
+     *        with
      * @return true iff the dependencies were created successfully
      * 
      * @see #addDependencies(int, int...)
      */
     public void addDependencies(int relationship,
             DependentSeekBar... dependentSeekBars) {
-
+        if (manager == null)
+            return;
         switch (relationship) {
         case LESS_THAN:
             manager.addLessThanDependencies(this, dependentSeekBars);
@@ -531,18 +578,22 @@ public class DependentSeekBar extends SeekBar {
     }
 
     /**
-     * Get the maximum progress which the seek bar can move to given its dependencies.
-     *
-     * @return maximum progress which the seek bar can move to given its dependencies
+     * Get the maximum progress which the seek bar can move to given its
+     * dependencies.
+     * 
+     * @return maximum progress which the seek bar can move to given its
+     *         dependencies
      */
     public int getRestrictedMax() {
         return canMoveRight(getMax() - getProgress() + 1, true);
     }
 
     /**
-     * Get the minimum progress which the seek bar can move to given its dependencies
-     *
-     * @return minimum progress which the seek bar can move to given its dependencies
+     * Get the minimum progress which the seek bar can move to given its
+     * dependencies
+     * 
+     * @return minimum progress which the seek bar can move to given its
+     *         dependencies
      */
     public int getRestrictedMin() {
         return canMoveLeft(getProgress() + 1, true);
