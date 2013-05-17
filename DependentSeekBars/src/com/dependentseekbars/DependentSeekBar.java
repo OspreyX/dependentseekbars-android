@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.SeekBar;
 
 import com.dependentseekbars.DependencyGraph.Node;
@@ -148,8 +147,6 @@ public class DependentSeekBar extends SeekBar {
 
                 outputBuffer = "";
 
-                Log.e("DependentSeekBar", "attempt progress change to "
-                        + progress + " from " + getProgress());
                 // If the new progress isn't the same as the old one and
                 // movement is allowed in that direction,
                 int allowedMovement = 0;
@@ -170,27 +167,18 @@ public class DependentSeekBar extends SeekBar {
                         }
                         if (oldProgress != progress) {
                             pauseProgressChangedListener = true;
-                            Log.e("DependentSeekBar",
-                                    "successfully changing progress to "
-                                            + oldProgress);
                             setProgress(oldProgress);
                             pauseProgressChangedListener = false;
                         }
                         l.onProgressChanged(seekBar, oldProgress, fromUser);
                     } else {
                         pauseProgressChangedListener = true;
-                        Log.e("DependentSeekBar",
-                                "successfully changing progress to "
-                                        + oldProgress);
                         setProgress(oldProgress);
                         pauseProgressChangedListener = false;
                     }
 
                 } else {
                     pauseProgressChangedListener = true;
-                    Log.e("DependentSeekBar",
-                            "successfully changing progress to " + oldProgress);
-                    setProgress(oldProgress);
                     pauseProgressChangedListener = false;
                 }
 
@@ -227,7 +215,6 @@ public class DependentSeekBar extends SeekBar {
      * calculated tempProgress values
      */
     void moveToTempProgress() {
-        Log.e(TAG, "tempProgress=" + tempProgress);
         oldProgress = tempProgress;
 
         pauseProgressChangedListener = true;
@@ -316,8 +303,6 @@ public class DependentSeekBar extends SeekBar {
      */
     private int canMoveRight(int displacement, int oldProgress,
             boolean checkOnly) {
-        Log.e("Testing", outputBuffer + "attempting to move " + displacement
-                + "; oldProgress=" + oldProgress + ", max=" + getMax());
         int desiredProgress = oldProgress + displacement;
         // Creates a list of all max. dependent sliders which are left of the
         // current slider's desired progress
@@ -343,9 +328,6 @@ public class DependentSeekBar extends SeekBar {
          */
         if (conflictingChildren.size() == 0 && desiredProgress <= getMax()
                 && (oldProgress + displacement) >= 0) {
-            Log.e("Testing", outputBuffer
-                    + "no restrictions, returning displacement " + displacement
-                    + "; oldProgress=" + oldProgress + ", max=" + getMax());
             return displacement;
         } else if (conflictingChildren.size() != 0) {
             int allowedDisplacement = displacement;
@@ -369,13 +351,8 @@ public class DependentSeekBar extends SeekBar {
 
                 allowedDisplacement = Math.min(allowedDisplacement, temp);
             }
-            Log.e("Testing", outputBuffer + "returning displacement "
-                    + allowedDisplacement + "; oldProgress=" + oldProgress
-                    + ", max=" + getMax());
             return allowedDisplacement;
         } else
-            Log.e("Testing", outputBuffer + "no displacement allowed"
-                    + "; oldProgress=" + oldProgress + ", max=" + getMax());
         return 0;
     }
 
@@ -420,8 +397,6 @@ public class DependentSeekBar extends SeekBar {
      *         maximum amount it is allowed to move.
      */
     int canMoveLeft(int displacement, int oldProgress, boolean checkOnly) {
-        Log.e("Testing", outputBuffer + "attempting to move " + displacement
-                + "; oldProgress=" + oldProgress + ", max=" + getMax());
         int desiredProgress = oldProgress - displacement;
         // Creates a list of all min. dependent sliders which are left of the
         // current slider's desired progress
@@ -447,9 +422,6 @@ public class DependentSeekBar extends SeekBar {
          */
         if (conflictingParents.size() == 0 && desiredProgress <= getMax()
                 && desiredProgress >= 0) {
-            Log.e("Testing", outputBuffer
-                    + "no restrictions, returning displacement " + displacement
-                    + "; oldProgress=" + oldProgress + ", max=" + getMax());
             return displacement;
         } else if (conflictingParents.size() != 0) {
             int allowedDisplacement = displacement;
@@ -473,14 +445,8 @@ public class DependentSeekBar extends SeekBar {
 
                 allowedDisplacement = Math.min(allowedDisplacement, temp);
             }
-            Log.e("Testing", outputBuffer + "returning displacement "
-                    + allowedDisplacement + "; oldProgress=" + oldProgress
-                    + ", max=" + getMax());
             return allowedDisplacement;
         } else {
-            Log.e("Testing", outputBuffer
-                    + "no displacement allowed; oldProgress=" + oldProgress
-                    + ", max=" + getMax());
             return 0;
         }
     }
@@ -499,7 +465,6 @@ public class DependentSeekBar extends SeekBar {
      *         progress
      */
     public boolean moveTo(int newProgress) {
-        Log.e(TAG, "seek request recieved for " + newProgress);
         int curProgress = getProgress();
         int displacement = curProgress - newProgress;
         if (displacement == 0
@@ -513,7 +478,6 @@ public class DependentSeekBar extends SeekBar {
             pauseProgressChangedListener = false;
 
             moveDependenciesToTempProgress();
-            Log.e(TAG, "should move");
             return true;
         }
         clearTempProgress();
@@ -585,7 +549,9 @@ public class DependentSeekBar extends SeekBar {
      *         dependencies
      */
     public int getRestrictedMax() {
-        return canMoveRight(getMax() - getProgress() + 1, true);
+        int movement = canMoveRight(getMax() - getProgress() + 1, true);
+        clearTempProgress();
+        return getProgress() + movement;
     }
 
     /**
@@ -596,6 +562,8 @@ public class DependentSeekBar extends SeekBar {
      *         dependencies
      */
     public int getRestrictedMin() {
-        return canMoveLeft(getProgress() + 1, true);
+        int movement = canMoveLeft(getProgress() + 1, true);
+        clearTempProgress();
+        return getProgress() - movement;
     }
 }
