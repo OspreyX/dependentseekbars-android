@@ -1,11 +1,9 @@
 package com.dependentseekbars;
 
 import java.util.ArrayList;
-
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.SeekBar;
-
 import com.dependentseekbars.DependencyGraph.Node;
 
 /**
@@ -14,33 +12,20 @@ import com.dependentseekbars.DependencyGraph.Node;
  */
 public class DependentSeekBar extends SeekBar {
     public static final String TAG = "DependentSeekBar";
-    private DependentSeekBarManager manager;
-    private Node node;
-    private int oldProgress = 0;
-    private int tempProgress = -1;
-    private boolean useTempProgress = false;
-    private boolean pauseProgressChangedListener = false;
+    private DependentSeekBarManager mManager;
+    private Node mNode;
+    private int mOldProgress = 0;
+    private int mTempProgress = -1;
+    private boolean mUseTempProgress = false;
+    private boolean mPauseProgressChangedListener = false;
 
     // Used for creating output strings for recursive calls to make reading
     // easier
     private String outputBuffer = "";
 
-    // Relationship constants
-    public static final int LESS_THAN = 0;
-    public static final int GREATER_THAN = 1;
-
-    /**
-     * Creates a DependentSeekBar and adds it to the provided
-     * {@link DependentSeekBarManager}.
-     * 
-     * @param context
-     * @param manager The {@link DependentSeekBarManager} that this
-     *        DependentSeekBar will be added to.
-     */
-    public DependentSeekBar(Context context, DependentSeekBarManager manager) {
-        super(context);
-        this.manager = manager;
-        init();
+    public enum Dependency {
+        LESS_THAN,
+        GREATER_THAN;
     }
 
     /**
@@ -56,18 +41,40 @@ public class DependentSeekBar extends SeekBar {
      */
     public DependentSeekBar(Context context, DependentSeekBarManager manager,
             int progress, int maximum) {
-        super(context);
-        this.manager = manager;
+        this(context, manager);
         setProgress(progress);
+        // This must be done even though it was already done in init, because the progress was not set to the correct
+        // value before init was called.
+        mOldProgress = progress;
         setMax(maximum);
+    }
+
+    /**
+     * Creates a DependentSeekBar and adds it to the provided
+     * {@link DependentSeekBarManager}.
+     *
+     * @param context
+     * @param manager The {@link DependentSeekBarManager} that this
+     *        DependentSeekBar will be added to.
+     */
+    public DependentSeekBar(Context context, DependentSeekBarManager manager) {
+        super(context);
+        this.mManager = manager;
         init();
     }
 
+    /*
+     * This contructor must be exposed separately from the constructors which take in a {@link DependentSeekBarManager}
+     * as it is required by the android layout manager.
+     */
     public DependentSeekBar(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
+        this(context, attrs, android.R.attr.seekBarStyle);
     }
 
+    /*
+     * This contructor must be exposed separately from the constructors which take in a {@link DependentSeekBarManager}
+     * as it is required by the android layout manager.
+     */
     public DependentSeekBar(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init();
@@ -75,12 +82,12 @@ public class DependentSeekBar extends SeekBar {
 
     /**
      * This method MUST be called in the constructor. This will ensure that
-     * oldProgress is initialized to the correct value and invoke
+     * mOldProgress is initialized to the correct value and invoke
      * setOnSeekBarChangeListener() so that we override the current listener
      * with our dependency logic.
      */
     private void init() {
-        oldProgress = getProgress();
+        mOldProgress = getProgress();
         setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
@@ -104,18 +111,20 @@ public class DependentSeekBar extends SeekBar {
      * @param n the node from the dependency graph
      */
     void setNode(Node n) {
-        node = n;
+        mNode = n;
     }
 
     void setManager(DependentSeekBarManager manager) {
-        this.manager = manager;
+        this.mManager = manager;
     }
 
     @Override
     /**
-     * This function sets the listener so that the dependency logic gets executed everytime the slider progress is changed.
+     * This function sets the listener so that the dependency logic gets
+     * executed every time the slider progress is changed.
      * The dependency logic will decide if movement is allowed and by how much.
-     * It executes the provided OnSeekBarChangeListener and executes it after the dependency logic.
+     * It executes the provided OnSeekBarChangeListener and executes it after
+     * the dependency logic.
      */
     public void setOnSeekBarChangeListener(final OnSeekBarChangeListener l) {
         super.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
@@ -132,15 +141,17 @@ public class DependentSeekBar extends SeekBar {
 
             @Override
             /**
-             * Determines if the seekbar's progress should be changed if other seekbars must be shifted to ensure that the dependencies still hold.
-             * 
+             * Determines if the seekbar's progress should be changed if
+             * other seekbars must be shifted to ensure that the dependencies
+             * still hold.
+             *
              */
             public void onProgressChanged(SeekBar seekBar, int progress,
                     boolean fromUser) {
                 // When only a progress change and UI update is desired, this
                 // will only update the progress and not execute the logic
                 // afterwards
-                if (pauseProgressChangedListener || node == null) {
+                if (mPauseProgressChangedListener || mNode == null) {
                     l.onProgressChanged(seekBar, progress, fromUser);
                     return;
                 }
@@ -149,264 +160,151 @@ public class DependentSeekBar extends SeekBar {
 
                 // If the new progress isn't the same as the old one and
                 // movement is allowed in that direction,
-                int allowedMovement = 0;
-                if ((oldProgress - progress) != 0) {
-                    if (oldProgress - progress < 0) {
-                        allowedMovement = canMoveRight(progress - oldProgress,
-                                oldProgress, false);
-                    } else if (oldProgress - progress > 0) {
-                        allowedMovement = canMoveLeft(oldProgress - progress,
-                                oldProgress, false);
-                    }
+                int allowedMovement;
+                final int distance = progress - mOldProgress;
+                if (distance != 0) {
+                    allowedMovement = canMove(distance, mOldProgress, false);
 
-                    if (allowedMovement > 0) {
-                        if (oldProgress - progress < 0) {
-                            oldProgress += allowedMovement;
-                        } else {
-                            oldProgress -= allowedMovement;
+                    if ((distance < 0 && allowedMovement < 0) ||
+                            (distance > 0 && allowedMovement > 0)) {
+                        mOldProgress += allowedMovement;
+
+                        if (mOldProgress != progress) {
+                            setProgressWithoutUpdate(mOldProgress);
                         }
-                        if (oldProgress != progress) {
-                            pauseProgressChangedListener = true;
-                            setProgress(oldProgress);
-                            pauseProgressChangedListener = false;
-                        }
-                        l.onProgressChanged(seekBar, oldProgress, fromUser);
                     } else {
-                        pauseProgressChangedListener = true;
-                        setProgress(oldProgress);
-                        pauseProgressChangedListener = false;
+                        setProgressWithoutUpdate(mOldProgress);
                     }
-
-                } else {
-                    pauseProgressChangedListener = true;
-                    pauseProgressChangedListener = false;
                 }
-
-                l.onProgressChanged(seekBar, oldProgress, fromUser);
+                l.onProgressChanged(seekBar, mOldProgress, fromUser);
             }
         });
     }
 
-    // Similar to super.getProgress() but returns tempProgress if only a check
+    private void setProgressWithoutUpdate(int progress) {
+        mPauseProgressChangedListener = true;
+        setProgress(progress);
+        mPauseProgressChangedListener = false;
+    }
+
+    // Similar to super.getProgress() but returns mTempProgress if only a check
     // is being performed
     @Override
     public int getProgress() {
-        if (useTempProgress) {
-            return tempProgress;
-        }
-        return super.getProgress();
+        return mUseTempProgress ? mTempProgress : super.getProgress();
     }
 
-    // When only a check is performed, this function will set useTempProgress to
+    // When only a check is performed, this function will set mUseTempProgress to
     // true
     private void useTempProgress() {
-        if (!useTempProgress) {
-            tempProgress = getProgress();
-            useTempProgress = true;
+        if (!mUseTempProgress) {
+            mTempProgress = getProgress();
+            mUseTempProgress = true;
         }
     }
 
     boolean usingTempProgress() {
-        return useTempProgress;
+        return mUseTempProgress;
     }
 
-    /*
-     * Used for doing an actual progress movement faster by using the previously
-     * calculated tempProgress values
-     */
-    void moveToTempProgress() {
-        oldProgress = tempProgress;
+    void clearTempProgress(boolean updateBeforeClearing) {
+        if (updateBeforeClearing) {
+            mOldProgress = mTempProgress;
+            setProgressWithoutUpdate(mOldProgress);
+        }
+        mUseTempProgress = false;
 
-        pauseProgressChangedListener = true;
-        setProgress(oldProgress);
-        pauseProgressChangedListener = false;
-
-        useTempProgress = false;
-
-        moveDependenciesToTempProgress();
-    }
-
-    void moveDependenciesToTempProgress() {
-        for (Node child : node.getChildren()) {
+        for (Node child : mNode.getChildren()) {
             DependentSeekBar dependent = child.getSeekBar();
             if (dependent.usingTempProgress()) {
-                dependent.moveToTempProgress();
+                dependent.clearTempProgress(updateBeforeClearing);
             }
         }
-        for (Node parent : node.getParents()) {
+        for (Node parent : mNode.getParents()) {
             DependentSeekBar dependent = parent.getSeekBar();
             if (dependent.usingTempProgress()) {
-                dependent.moveToTempProgress();
-            }
-        }
-    }
-
-    // recursively clears all tempProgresses on all possible DependentSeekBars
-    // that could have been used
-    void clearTempProgress() {
-        useTempProgress = false;
-
-        for (Node child : node.getChildren()) {
-            DependentSeekBar dependent = child.getSeekBar();
-            if (dependent.usingTempProgress()) {
-                dependent.clearTempProgress();
-            }
-        }
-        for (Node parent : node.getParents()) {
-            DependentSeekBar dependent = parent.getSeekBar();
-            if (dependent.usingTempProgress()) {
-                dependent.clearTempProgress();
+                dependent.clearTempProgress(updateBeforeClearing);
             }
         }
     }
 
     /**
-     * Determines whether the seekbar can move its progress to the right by
-     * calling canMoveRight(). The return value of canMoveRight(),
-     * movementAllowed, represents how much this seekBar will move by. This
-     * function updates the progress of the seekBar and returns the amount that
-     * it has changed by.
+     * Behaves the same as {@link #setProgress(int)}, but will return boolean
+     * which denotes whether the seek bar was able to move to the given value
+     * with its dependencies.
+     *
+     * @param newProgress the desired progress to move the seek bar to
+     * @return true iff the seek bar was able to successfully move to the new
+     *         progress
+     */
+    public boolean moveTo(int newProgress) {
+        boolean result = false;
+        int curProgress = getProgress();
+        int displacement = newProgress - curProgress;
+        if (displacement == 0
+                || (displacement > 0 && canMove(displacement, curProgress,
+                true) == displacement)) {
+            mTempProgress = newProgress;
+            result = true;
+        }
+        clearTempProgress(result);
+        return result;
+    }
+
+    /**
+     * Determines if the slider can move the given displacement amount and if
+     * not, the furthest it can move. This function updates the progress of
+     * the seekBar iff checkOnly is false and returns the amount that it
+     * has changed by (or the amount that it is able to change by iff
+     * checkOnly is true).
      * 
      * @param displacement the distance the seek bar is being requested to move
      *        right
-     * @return amount that this seekbar has actually moved
+     * @return 0 when it cannot move. An integer representing the amount it
+     *         can move otherwise. The integer will have the same sign as the
+     *         displacement provided.
      */
-    private int canMoveRight(int displacement, boolean checkOnly) {
-        int movementAllowed;
-        if ((movementAllowed = canMoveRight(displacement, oldProgress,
-                checkOnly)) > 0) {
+    private int canMove(int displacement, boolean checkOnly) {
+        int movementAllowed = canMove(displacement, mOldProgress, checkOnly);
+        if ((displacement < 0 && movementAllowed < 0) ||
+                (displacement > 0 && movementAllowed > 0)) {
             if (!checkOnly) {
-                pauseProgressChangedListener = true;
-                setProgress(oldProgress + movementAllowed);
-                pauseProgressChangedListener = false;
+                setProgressWithoutUpdate(mOldProgress + movementAllowed);
             }
         }
         if (!checkOnly) {
-            oldProgress += movementAllowed;
+            mOldProgress += movementAllowed;
         } else {
-            tempProgress += movementAllowed;
+            mTempProgress += movementAllowed;
         }
         return movementAllowed;
     }
 
     /**
-     * Determines how much the slider can move its progress to the right. The
-     * return value is calculated by asking dependent sliders whether the
-     * desired value will conflict with dependencies and asking the dependent
-     * sliders to move as far as necessary.
-     * 
+     * Determines if the slider can move the given displacement amount and if
+     * not, the furthest it can move. The return value is calculated by
+     * asking dependent sliders whether the desired value will conflict with
+     * dependencies and asking the dependent sliders to move as far as
+     * necessary.
+     *
      * @param displacement the distance the seek bar is being requested to move
      *        right
      * @param oldProgress the current progress of the seek bar
      * @return 0 when it cannot move. A positive integer representing the
      *         maximum amount it is allowed to move.
      */
-    private int canMoveRight(int displacement, int oldProgress,
-            boolean checkOnly) {
+    int canMove(int displacement, int oldProgress, boolean checkOnly) {
         int desiredProgress = oldProgress + displacement;
-        // Creates a list of all max. dependent sliders which are left of the
+        // Creates a list of all dependent sliders which conflict with the
         // current slider's desired progress
-        ArrayList<Node> conflictingChildren = new ArrayList<Node>();
-        for (Node child : node.getChildren()) {
-            if (child.getProgress() <= desiredProgress) {
-                conflictingChildren.add(child);
-                child.getSeekBar().setOutputBuffer(outputBuffer + "\t");
+        ArrayList<Node> conflicting = new ArrayList<Node>();
+        for (Node node : displacement < 0 ? mNode.getParents() : mNode.getChildren()) {
+            if ((displacement < 0 && node.getProgress() >= desiredProgress) ||
+                    (displacement > 0 && node.getProgress() <= desiredProgress)) {
+                conflicting.add(node);
+                node.getSeekBar().setOutputBuffer(outputBuffer + "\t");
                 if (checkOnly) {
-                    child.getSeekBar().useTempProgress();
-                }
-            }
-        }
-
-        /*
-         * Decides based on the contents of conflictingChildren the number to
-         * return.If shifting is allowed and the current slider's desired
-         * progress will conflict with 1 or more other sliders, those slider's
-         * will be asked to move and the values which they return will be used
-         * to determine the allowed movement for the current slider.When
-         * shifting is disabled, the current slider can only move as much as the
-         * next max. dependent slider.
-         */
-        if (conflictingChildren.size() == 0 && desiredProgress <= getMax()
-                && (oldProgress + displacement) >= 0) {
-            return displacement;
-        } else if (conflictingChildren.size() != 0) {
-            int allowedDisplacement = displacement;
-            for (Node child : conflictingChildren) {
-                // If the bar has been updated in the meantime, then we may not
-                // need it to move
-                if (child.getProgress() > desiredProgress) {
-                    continue;
-                }
-
-                int temp = displacement
-                        - (desiredProgress - child.getProgress() + 1);
-
-                // Determines how much the current slider can move if the child
-                // sliders are expected to move as far as necessary.
-                if (manager.isShiftingAllowed()) {
-                    temp += child.getSeekBar().canMoveRight(
-                            desiredProgress - child.getProgress() + 1,
-                            checkOnly);
-                }
-
-                allowedDisplacement = Math.min(allowedDisplacement, temp);
-            }
-            return allowedDisplacement;
-        } else
-        return 0;
-    }
-
-    /**
-     * Determines whether the seekbar can move its progress to the left by
-     * calling canMoveLeft(). The return value of canMoveLeft(),
-     * movementAllowed, represents how much this seekBar will move by. This
-     * function updates the progress of the seekBar and returns the amount that
-     * it has changed by.
-     * 
-     * @param displacement the distance the seek bar is being requested to move
-     *        right
-     * @return amount that this seekbar has actually moved
-     */
-    private int canMoveLeft(int displacement, boolean checkOnly) {
-        int movementAllowed;
-        if ((movementAllowed = canMoveLeft(displacement, oldProgress, checkOnly)) > 0) {
-            if (!checkOnly) {
-                pauseProgressChangedListener = true;
-                setProgress(oldProgress - movementAllowed);
-                pauseProgressChangedListener = false;
-            }
-        }
-        if (!checkOnly) {
-            oldProgress -= movementAllowed;
-        } else {
-            tempProgress -= movementAllowed;
-        }
-        return movementAllowed;
-    }
-
-    /**
-     * Determines how much the slider can move its progress to the left. The
-     * return value is calculated by asking dependent sliders whether the
-     * desired value will conflict with dependencies and asking the dependent
-     * sliders to move as far as necessary.
-     * 
-     * @param displacement the distance the seek bar is being requested to move
-     *        right
-     * @param oldProgress the current progress of the seek bar
-     * @return 0 when it cannot move. A positive integer representing the
-     *         maximum amount it is allowed to move.
-     */
-    int canMoveLeft(int displacement, int oldProgress, boolean checkOnly) {
-        int desiredProgress = oldProgress - displacement;
-        // Creates a list of all min. dependent sliders which are left of the
-        // current slider's desired progress
-        ArrayList<Node> conflictingParents = new ArrayList<Node>();
-        for (Node parent : node.getParents()) {
-            if (parent.getProgress() >= desiredProgress) {
-                conflictingParents.add(parent);
-                parent.getSeekBar().setOutputBuffer(outputBuffer + "\t");
-                if (checkOnly) {
-                    parent.getSeekBar().useTempProgress();
+                    node.getSeekBar().useTempProgress();
                 }
             }
         }
@@ -420,30 +318,36 @@ public class DependentSeekBar extends SeekBar {
          * shifting is disabled, the current slider can only move as much as the
          * next min. dependent slider.
          */
-        if (conflictingParents.size() == 0 && desiredProgress <= getMax()
+        if (conflicting.size() == 0 && desiredProgress <= getMax()
                 && desiredProgress >= 0) {
             return displacement;
-        } else if (conflictingParents.size() != 0) {
+        } else if (conflicting.size() != 0) {
             int allowedDisplacement = displacement;
-            for (Node parent : conflictingParents) {
+            final int directionFactor = displacement < 0 ? -1 : 1;
+
+            for (Node conflict : conflicting) {
                 // If the bar has been updated in the meantime, then we may not
                 // need it to move
-                if (parent.getProgress() < oldProgress - allowedDisplacement) {
+                final int conflictProgress = conflict.getProgress();
+                if ((directionFactor < 0 && conflictProgress < oldProgress + allowedDisplacement) ||
+                        (directionFactor > 0 && conflictProgress > oldProgress + allowedDisplacement)) {
                     continue;
                 }
 
-                int temp = displacement
-                        - (parent.getProgress() - desiredProgress + 1);
+                final int distance = Math.abs(conflictProgress - desiredProgress) + 1;
+                int temp = displacement - (directionFactor * distance);
 
                 // Determines how much the current slider can move if the child
                 // sliders are expected to move as far as necessary.
-                if (manager.isShiftingAllowed()) {
-                    temp += parent.getSeekBar().canMoveLeft(
-                            parent.getProgress() - desiredProgress + 1,
+                if (mManager.isShiftingAllowed()) {
+                    temp += conflict.getSeekBar().canMove(
+                            directionFactor * distance,
                             checkOnly);
                 }
 
-                allowedDisplacement = Math.min(allowedDisplacement, temp);
+                allowedDisplacement = directionFactor < 0 ?
+                                      Math.max(allowedDisplacement, temp) :
+                                      Math.min(allowedDisplacement, temp);
             }
             return allowedDisplacement;
         } else {
@@ -453,35 +357,6 @@ public class DependentSeekBar extends SeekBar {
 
     private void setOutputBuffer(String newBuffer) {
         outputBuffer = newBuffer;
-    }
-
-    /**
-     * Behaves the same as {@link #setProgress(int)}, but will return as boolean
-     * which denotes whether the seek bar was able to move to the given value
-     * with its dependencies.
-     * 
-     * @param newProgress the desired progress to move the seek bar to
-     * @return true iff the seek bar was able to successfully move to the new
-     *         progress
-     */
-    public boolean moveTo(int newProgress) {
-        int curProgress = getProgress();
-        int displacement = curProgress - newProgress;
-        if (displacement == 0
-                || (displacement > 0 && canMoveLeft(displacement, curProgress,
-                        true) == displacement)
-                || (displacement < 0 && canMoveRight(-displacement,
-                        curProgress, true) == -displacement)) {
-            oldProgress = newProgress;
-            pauseProgressChangedListener = true;
-            setProgress(oldProgress);
-            pauseProgressChangedListener = false;
-
-            moveDependenciesToTempProgress();
-            return true;
-        }
-        clearTempProgress();
-        return false;
     }
 
     /**
@@ -496,18 +371,17 @@ public class DependentSeekBar extends SeekBar {
      *        dependencies with
      * @return true iff the dependencies were created successfully
      * 
-     * @see #addDependencies(int, DependentSeekBar...)
+     * @see #addDependencies(Dependency, DependentSeekBar...)
      */
-    public void addDependencies(int relationship, int... indices) {
-
-        if (manager == null)
+    public void addDependencies(Dependency relationship, int... indices) {
+        if (mManager == null)
             return;
         switch (relationship) {
         case LESS_THAN:
-            manager.addLessThanDependencies(this, indices);
+            mManager.addLessThanDependencies(this, indices);
             break;
         case GREATER_THAN:
-            manager.addGreaterThanDependencies(this, indices);
+            mManager.addGreaterThanDependencies(this, indices);
             break;
         }
     }
@@ -524,18 +398,18 @@ public class DependentSeekBar extends SeekBar {
      *        with
      * @return true iff the dependencies were created successfully
      * 
-     * @see #addDependencies(int, int...)
+     * @see #addDependencies(Dependency, int...)
      */
-    public void addDependencies(int relationship,
+    public void addDependencies(Dependency relationship,
             DependentSeekBar... dependentSeekBars) {
-        if (manager == null)
+        if (mManager == null)
             return;
         switch (relationship) {
         case LESS_THAN:
-            manager.addLessThanDependencies(this, dependentSeekBars);
+            mManager.addLessThanDependencies(this, dependentSeekBars);
             break;
         case GREATER_THAN:
-            manager.addGreaterThanDependencies(this, dependentSeekBars);
+            mManager.addGreaterThanDependencies(this, dependentSeekBars);
             break;
         }
 
@@ -549,8 +423,8 @@ public class DependentSeekBar extends SeekBar {
      *         dependencies
      */
     public int getRestrictedMax() {
-        int movement = canMoveRight(getMax() - getProgress() + 1, true);
-        clearTempProgress();
+        int movement = canMove(getMax() - getProgress() + 1, true);
+        clearTempProgress(false);
         return getProgress() + movement;
     }
 
@@ -562,8 +436,8 @@ public class DependentSeekBar extends SeekBar {
      *         dependencies
      */
     public int getRestrictedMin() {
-        int movement = canMoveLeft(getProgress() + 1, true);
-        clearTempProgress();
+        int movement = canMove(-(getProgress() + 1), true);
+        clearTempProgress(false);
         return getProgress() - movement;
     }
 }

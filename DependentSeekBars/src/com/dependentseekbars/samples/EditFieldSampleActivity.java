@@ -83,16 +83,16 @@ public class EditFieldSampleActivity extends Activity {
 			mainLayout.addView(rowLayout);
 
 			// Set up some dependencies so that the rows are actually used
-			manager.getSeekBar(0).addDependencies(DependentSeekBar.LESS_THAN,
+			manager.getSeekBar(0).addDependencies(DependentSeekBar.Dependency.LESS_THAN,
 					seekBar);
 
 		}
 
-		// Set up dependencies so that 1 < 2,3,4 ; 2,3 < 4
-		manager.getSeekBar(0).addDependencies(DependentSeekBar.LESS_THAN, 1, 2,
+		// Set up dependencies so that 0 < 1,2,3 ; 1,2 < 3
+		manager.getSeekBar(0).addDependencies(DependentSeekBar.Dependency.LESS_THAN, 1, 2,
 				3);
-		manager.getSeekBar(3).addDependencies(DependentSeekBar.GREATER_THAN, 2);
-		manager.getSeekBar(1).addDependencies(DependentSeekBar.LESS_THAN, 3);
+		manager.getSeekBar(3).addDependencies(DependentSeekBar.Dependency.GREATER_THAN, 2);
+		manager.getSeekBar(1).addDependencies(DependentSeekBar.Dependency.LESS_THAN, 3);
 
 		manager.setShiftingAllowed(true);
 
@@ -110,7 +110,7 @@ public class EditFieldSampleActivity extends Activity {
 			public void onProgressChanged(SeekBar seekBar, int progress,
 					boolean fromUser) {
 				pauseTextChangeListener = true;
-				editField.setText("" + seekBar.getProgress());
+				editField.setText(String.valueOf(seekBar.getProgress()));
 				pauseTextChangeListener = false;
 			}
 		});
@@ -129,7 +129,7 @@ public class EditFieldSampleActivity extends Activity {
 				if (!validValue) {
 					pauseTextChangeListener = true;
 					editField.setTextColor(Color.BLACK);
-					editField.setText("" + seekBar.getProgress());
+					editField.setText(String.valueOf(seekBar.getProgress()));
 					pauseTextChangeListener = false;
 					validValue = true;
 				}
@@ -147,19 +147,19 @@ public class EditFieldSampleActivity extends Activity {
 					try {
 						pauseTextChangeListener = true;
 						if (seekBar.moveTo(Integer.parseInt(s.toString()))) {
-							isValidValue(seekBar, editField, s);
+							validValue(seekBar, editField, s);
 						} else {
 							notValidValue();
 						}
-						pauseTextChangeListener = false;
 					} catch (Exception e) {
 						notValidValue();
-						pauseTextChangeListener = false;
+					} finally {
+					    pauseTextChangeListener = false;
 					}
 				}
 			}
 
-			private void isValidValue(final SeekBar iBar,
+			private void validValue(final SeekBar iBar,
 					final EditText iValue, CharSequence s) {
 				iValue.setText(s.toString());
 				iValue.setTextColor(Color.BLACK);

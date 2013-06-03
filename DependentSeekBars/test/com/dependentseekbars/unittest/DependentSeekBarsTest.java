@@ -37,9 +37,12 @@ public class DependentSeekBarsTest {
 			dependentSeekBars[i] = rsw.createSeekBar(progressValues[i]);
 		}
 
-		rsw.getSeekBar(0).addDependencies(DependentSeekBar.LESS_THAN, 1, 2, 3);
-		rsw.getSeekBar(1).addDependencies(DependentSeekBar.LESS_THAN, 3);
-		rsw.getSeekBar(3).addDependencies(DependentSeekBar.GREATER_THAN, 2);
+        rsw.getSeekBar(0).addDependencies(
+                DependentSeekBar.Dependency.LESS_THAN, 1, 2, 3);
+        rsw.getSeekBar(1).addDependencies(
+                DependentSeekBar.Dependency.LESS_THAN, 3);
+        rsw.getSeekBar(3).addDependencies(
+                DependentSeekBar.Dependency.GREATER_THAN, 2);
 	}
 
 	@Test
@@ -56,8 +59,6 @@ public class DependentSeekBarsTest {
 				equalTo(progressValues[0] + 21));
 		assertThat(dependentSeekBars[3].getProgress(),
 				equalTo(progressValues[0] + 22));
-		
-		
 	}
 
 	/*
@@ -70,16 +71,10 @@ public class DependentSeekBarsTest {
 				.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
 					@Override
-					public void onStopTrackingTouch(SeekBar arg0) {
-						// TODO Auto-generated method stub
-
-					}
+					public void onStopTrackingTouch(SeekBar arg0) {}
 
 					@Override
-					public void onStartTrackingTouch(SeekBar arg0) {
-						// TODO Auto-generated method stub
-
-					}
+					public void onStartTrackingTouch(SeekBar arg0) {}
 
 					@Override
 					public void onProgressChanged(SeekBar arg0, int arg1,
