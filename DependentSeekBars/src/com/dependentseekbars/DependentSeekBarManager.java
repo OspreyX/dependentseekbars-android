@@ -254,7 +254,7 @@ public class DependentSeekBarManager extends LinearLayout {
     void addLessThanDependencies(DependentSeekBar dependentSeekBar,
             int[] limitingIndices) {
         checkIndices(limitingIndices);
-        dg.addMaxDependencies(dependentSeekBar,
+        dg.addLessThanDependencies(dependentSeekBar,
                 getSubclassedSeekBars(limitingIndices));
     }
 
@@ -265,7 +265,7 @@ public class DependentSeekBarManager extends LinearLayout {
             if (limit == null || !seekBars.contains(limit))
                 throw new NullPointerException();
         }
-        dg.addMaxDependencies(dependentSeekBar, getSubclassedSeekBars(limiting));
+        dg.addLessThanDependencies(dependentSeekBar, getSubclassedSeekBars(limiting));
     }
 
     /**
@@ -286,7 +286,7 @@ public class DependentSeekBarManager extends LinearLayout {
     void addGreaterThanDependencies(DependentSeekBar dependentSeekBar,
             int[] limitingIndices) {
         checkIndices(limitingIndices);
-        dg.addMinDependencies(dependentSeekBar,
+        dg.addGreaterThanDependencies(dependentSeekBar,
                 getSubclassedSeekBars(limitingIndices));
     }
 
@@ -298,7 +298,7 @@ public class DependentSeekBarManager extends LinearLayout {
                 throw new NullPointerException();
         }
 
-        dg.addMinDependencies(dependentSeekBar, getSubclassedSeekBars(limiting));
+        dg.addGreaterThanDependencies(dependentSeekBar, getSubclassedSeekBars(limiting));
     }
 
     private DependentSeekBar[] getSubclassedSeekBars(
