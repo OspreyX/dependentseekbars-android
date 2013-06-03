@@ -29,7 +29,7 @@ public class DependentSeekBarManager extends LinearLayout {
     private DependencyGraph dg;
     private int spacing = 0;
     private boolean shiftingAllowed = true;
-    
+
     private final int DEFAULT_MAXIMUM_PROGRESS = 100;
 
     /**
@@ -60,7 +60,7 @@ public class DependentSeekBarManager extends LinearLayout {
                 R.styleable.DependentSeekBarManager);
 
         spacing = a.getInt(R.styleable.DependentSeekBarManager_spacing, 0);
-        
+
         a.recycle();
 
         init();
@@ -75,7 +75,7 @@ public class DependentSeekBarManager extends LinearLayout {
                 R.styleable.DependentSeekBarManager, defStyle, 0);
 
         spacing = a.getInt(R.styleable.DependentSeekBarManager_spacing, 0);
-        
+
         a.recycle();
 
         init();
@@ -105,7 +105,7 @@ public class DependentSeekBarManager extends LinearLayout {
      * 
      * @param progress the initial progress of the seek bar
      * @return the {@link DependentSeekBar} which was added to the widget
-     * 
+     *
      * @see #createSeekBar(int, int)
      */
     public DependentSeekBar createSeekBar(int progress) {
@@ -148,7 +148,7 @@ public class DependentSeekBarManager extends LinearLayout {
         }
         setSeekBarMargin(seekBars.size() - 1, 0);
     }
-    
+
     private void setSeekBarMargin(int index, int space){
         ((LinearLayout.LayoutParams) seekBars.get(index).getLayoutParams()).setMargins(
                 0, 0, 0, space);
@@ -158,13 +158,13 @@ public class DependentSeekBarManager extends LinearLayout {
      * Adds a {@link DependentSeekBar} to the manager allowing the
      * {@link DependentSeekBar} to have dependency relationships with other
      * {@link DependentSeekBar}s in the manager
-     * 
+     *
      * @param seekBar
      */
     public void addSeekBar(DependentSeekBar seekBar) {
         if(seekBars.contains(seekBar))
             return;
-        
+
         seekBars.add(seekBar);
 
         minDependencies.add(new ArrayList<Integer>());
