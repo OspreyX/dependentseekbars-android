@@ -102,7 +102,7 @@ public class DependentSeekBarManager extends LinearLayout {
      * {@link DependentSeekBar} returned will be shown at the bottom of the
      * widget if in vertical view, and on the right if in horizontal view. The
      * maximum value progress will be set to 100.
-     * 
+     *
      * @param progress the initial progress of the seek bar
      * @return the {@link DependentSeekBar} which was added to the widget
      *
