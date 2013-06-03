@@ -8,24 +8,24 @@ import android.util.Log;
  * Acyclic Graph datastructure designed to maintain the dependencies of the
  * {@link DependentSeekBar}. Nodes are {@link DependentSeekBar}s and edges are
  * the dependencies.
- * 
- * Dependency representation: 
+ *
+ * Dependency representation:
  *
  *  The DependencyGraph maintains relationships by making a SeekBar's respective
  *  node a child or parent of another node.
  *
  *  There are two kinds of relationships, Greater Than and Less Than.
  *
- *   Greater Than: If SeekBar1 > SeekBar2, then Node1 is a child of Node2 
+ *   Greater Than: If SeekBar1 > SeekBar2, then Node1 is a child of Node2
  *   Less Than: If SeekBar1 < SeekBar2, then Node1 is a parent of Node2
- * 
+ *
  * If the graph adds an edge that creates a cycle, an InconsistentGraphException
  * is thrown.
- * 
+ *
  */
 public class DependencyGraph {
     private ArrayList<Node> nodes;
-    
+
     public final static int CHECK_ALL_DEPENDENCIES = 0;
     public final static int CHECK_GT_DEPENDENCIES = 1;
     public final static int CHECK_LT_DEPENDENCIES = 2;
@@ -33,7 +33,7 @@ public class DependencyGraph {
     public DependencyGraph() {
         nodes = new ArrayList<Node>();
     }
-    
+
     /**
      * Adds a {@link Node} to the graph corresponding to seekBar.
      * @param seekBar
@@ -89,7 +89,7 @@ public class DependencyGraph {
     /*
      * Adds a Less Than dependency. If the dependency causes the graph
      * to have a cycle, an InconsistentGraphException is thrown.
-     * 
+     *
      * This is used as a helper function for the public function of the same name.
      */
     private void addLessThanDependency(DependentSeekBar dependent,
@@ -155,7 +155,7 @@ public class DependencyGraph {
     /*
      * Adds a Greater Than dependency. If the dependency causes the graph
      * to have a cycle, an InconsistentGraphException is thrown.
-     * 
+     *
      * This is used as a helper function for the public function of the same name.
      */
     private void addGreaterThanDependency(DependentSeekBar dependent,
@@ -205,9 +205,9 @@ public class DependencyGraph {
         dependNode.addParent(parentNode);
         parentNode.addChild(dependNode);
     }
-    
-    /* 
-     * Checks if a cycle exists containing limitingNode. 
+
+    /*
+     * Checks if a cycle exists containing limitingNode.
      * This checks all dependencies of limitingNode for a cycle
      */
     private boolean containsCycle(Node limitingNode){
@@ -215,17 +215,15 @@ public class DependencyGraph {
     }
 
     /*
-     * Checks if a cycle exists from limitingNode. Calls the helper function 
+     * Checks if a cycle exists from limitingNode. Calls the helper function
      * on each child of limitingNode.
      */
     private boolean containsCycle(Node limitingNode, int checkType) {
-        
         if(checkType != CHECK_GT_DEPENDENCIES){
-            
             for(Node child : limitingNode.getChildren()){
                 child.setVisited(false);
             }
-            
+
             for (Node child : limitingNode.getChildren()) {
                 if (containsCycleHelper(limitingNode, child, CHECK_LT_DEPENDENCIES))
                     return true;
@@ -233,11 +231,11 @@ public class DependencyGraph {
         }
         
         if(checkType != CHECK_LT_DEPENDENCIES){
-            
+
             for(Node parent : limitingNode.getParents()){
                 parent.setVisited(false);
             }
-            
+
             for (Node parent : limitingNode.getParents()) {
                 if (containsCycleHelper(limitingNode, parent, CHECK_GT_DEPENDENCIES))
                     return true;
@@ -245,7 +243,7 @@ public class DependencyGraph {
         }
         return false;
     }
-    
+
     private boolean containsCycleHelper(Node startingNode, Node currentNode, int checkType){
         boolean containsCycle = false;
         if (currentNode.equals(startingNode)) {
@@ -260,7 +258,7 @@ public class DependencyGraph {
             else{
                 nodesToCheck = currentNode.getParents();
             }
-            
+
             for (Node child : nodesToCheck) {
                 if (containsCycleHelper(startingNode, child, checkType)) {
                     containsCycle = true;
@@ -364,7 +362,7 @@ public class DependencyGraph {
         public int getProgress() {
             return seekBar.getProgress();
         }
-        
+
         /**
          * Get the {@link DependentSeekBar} corresponding to the node
          * @return
@@ -415,7 +413,7 @@ public class DependencyGraph {
 
         /**
          * Checks if the given node is a child of this Node
-         * @param node 
+         * @param node
          * @return true if node is a child of this Node, false otherwise
          */
         public boolean containsChild(Node node) {
@@ -438,7 +436,7 @@ public class DependencyGraph {
      * a cycle, a circular dependency between {@link DependentSeekBar}s exists.
      */
     public class InconsistentGraphException extends RuntimeException {
-        
+
         /**
          * Constructs an InconsistentGraphException with no error message
          */

@@ -24,11 +24,11 @@ import com.dependentseekbars.DependentSeekBarManager;
 public class DependencyGraphTest {
 
     private final int NUM_NODES = 4;
-	private DependencyGraph dg;
-	private DependentSeekBarManager rsw;
-	private Context context;
-	private ArrayList<Node> nodes;
-	private ArrayList<DependentSeekBar> seekBars;
+    private DependencyGraph dg;
+    private DependentSeekBarManager rsw;
+    private Context context;
+    private ArrayList<Node> nodes;
+    private ArrayList<DependentSeekBar> seekBars;
     private Method isAcyclicMethod;
 
 	@Before
@@ -79,8 +79,6 @@ public class DependencyGraphTest {
 	public void testSetup() throws Exception {
 
         assertEquals(nodes.size(), NUM_NODES);
-        
-
 
         for (int i = 0; i < NUM_NODES; i++) {
 			assertEquals(nodes.get(i).getParents().size(), 0);

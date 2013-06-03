@@ -29,6 +29,8 @@ public class DependentSeekBarManager extends LinearLayout {
     private DependencyGraph dg;
     private int spacing = 0;
     private boolean shiftingAllowed = true;
+    
+    private final int DEFAULT_MAXIMUM_PROGRESS = 100;
 
     /**
      * Creates a DependentSeekBarManager that can be used to contain
@@ -57,14 +59,8 @@ public class DependentSeekBarManager extends LinearLayout {
         TypedArray a = context.obtainStyledAttributes(attrs,
                 R.styleable.DependentSeekBarManager);
 
-        String str = a.getString(R.styleable.DependentSeekBarManager_spacing);
-        if (str != null && !str.equals("")) {
-            try {
-                spacing = Integer.parseInt(str);
-            } catch (NumberFormatException e) {
-
-            }
-        }
+        spacing = a.getInt(R.styleable.DependentSeekBarManager_spacing, 0);
+        
         a.recycle();
 
         init();
@@ -78,14 +74,8 @@ public class DependentSeekBarManager extends LinearLayout {
         TypedArray a = context.obtainStyledAttributes(attrs,
                 R.styleable.DependentSeekBarManager, defStyle, 0);
 
-        String str = a.getString(R.styleable.DependentSeekBarManager_spacing);
-        if (str != null && !str.equals("")) {
-            try {
-                spacing = Integer.parseInt(str);
-            } catch (NumberFormatException e) {
-
-            }
-        }
+        spacing = a.getInt(R.styleable.DependentSeekBarManager_spacing, 0);
+        
         a.recycle();
 
         init();
@@ -119,7 +109,7 @@ public class DependentSeekBarManager extends LinearLayout {
      * @see #createSeekBar(int, int)
      */
     public DependentSeekBar createSeekBar(int progress) {
-        return createSeekBar(progress, 100);
+        return createSeekBar(progress, DEFAULT_MAXIMUM_PROGRESS);
     }
 
     /**
@@ -154,11 +144,14 @@ public class DependentSeekBarManager extends LinearLayout {
 
     private void setupMargins() {
         if (seekBars.size() > 1) {
-            ((LinearLayout.LayoutParams) seekBars.get(seekBars.size() - 2).getLayoutParams()).setMargins(
-                    0, 0, 0, spacing);
+            setSeekBarMargin(seekBars.size() - 2, spacing);
         }
-        ((LinearLayout.LayoutParams) seekBars.get(seekBars.size() - 1).getLayoutParams()).setMargins(
-                0, 0, 0, 0);
+        setSeekBarMargin(seekBars.size() - 1, 0);
+    }
+    
+    private void setSeekBarMargin(int index, int space){
+        ((LinearLayout.LayoutParams) seekBars.get(index).getLayoutParams()).setMargins(
+                0, 0, 0, space);
     }
 
     /**
@@ -169,6 +162,9 @@ public class DependentSeekBarManager extends LinearLayout {
      * @param seekBar
      */
     public void addSeekBar(DependentSeekBar seekBar) {
+        if(seekBars.contains(seekBar))
+            return;
+        
         seekBars.add(seekBar);
 
         minDependencies.add(new ArrayList<Integer>());
@@ -320,7 +316,6 @@ public class DependentSeekBarManager extends LinearLayout {
         return limitingSeekBars;
     }
 
-    // TODO should we be throwing an exception or returning false?
     private void checkIndices(int[] indices) {
         for (int i = 0; i < indices.length; i++) {
             if (indices[i] >= seekBars.size() || indices[i] < 0)
