@@ -18,9 +18,9 @@ import com.dependentseekbars.DependencyGraph.Node;
  * {@link DependentSeekBar}s. Less than and greater than relationships can be
  * created between different {@link DependentSeekBar}s, such that one
  * DependentSeekBar must always be less/greater than another.
- * 
+ *
  * @author jbeveridge and sujen
- * 
+ *
  */
 public class DependentSeekBarManager extends LinearLayout {
     private ArrayList<DependentSeekBar> seekBars;
@@ -36,7 +36,7 @@ public class DependentSeekBarManager extends LinearLayout {
      * Creates a DependentSeekBarManager that can be used to contain
      * {@link DependentSeekBar}s. By default, the DependentSeekBarManager has a
      * vertical orientation.
-     * 
+     *
      * @param context the application environment
      */
     public DependentSeekBarManager(Context context) {
@@ -49,7 +49,7 @@ public class DependentSeekBarManager extends LinearLayout {
      * Creates a DependentSeekBarManager that can be used to contain
      * {@link DependentSeekBar}s. By default, the DependentSeekBarManager has a
      * vertical orientation.
-     * 
+     *
      * @param context the application environment
      * @param attrs the layout attributes
      */
@@ -116,11 +116,11 @@ public class DependentSeekBarManager extends LinearLayout {
      * Create a new {@link DependentSeekBar} and adds it to the widget. The
      * {@link DependentSeekBar} returned will be shown at the bottom of the
      * widget if in vertical view, and on the right if in horizontal view.
-     * 
+     *
      * @param progress the initial progress of the seek bar
      * @param maximum the maximum value which the progress can be set to
      * @return the {@link DependentSeekBar} which was added to the widget
-     * 
+     *
      * @see #createSeekBar(int)
      */
     public DependentSeekBar createSeekBar(int progress, int maximum) {
@@ -189,12 +189,12 @@ public class DependentSeekBarManager extends LinearLayout {
      * being 0 and increasing downwards, or in horizontal left being 0 and right
      * being n-1). When a bar is removed, the index values of the
      * DependentSeekBars are adjusted to represent their new visual locations.
-     * 
+     *
      * @param index the index of the {@link DependentSeekBar} to remove
      * @param restructureDependencies
      * @return true iff there is a {@link DependentSeekBar} with given index and
      *         it is successfully removed
-     * 
+     *
      * @see #removeSeekBar(DependentSeekBar, boolean)
      */
     public boolean removeSeekBar(int index, boolean restructureDependencies) {
@@ -211,12 +211,12 @@ public class DependentSeekBarManager extends LinearLayout {
      * Removes the given DependentSeekBar from the widget. When a bar is
      * removed, the index values of the DependentSeekBars are adjusted to
      * represent their new visual locations.
-     * 
+     *
      * @param rsb the DependentSeekBar to remove
      * @param restructureDependencies
      * @return true iff the given DependentSeekBar is contained in the widget
      *         and it is successfully removed
-     * 
+     *
      * @see #removeSeekBar(int, boolean)
      */
     public boolean removeSeekBar(DependentSeekBar dependent,
@@ -240,7 +240,7 @@ public class DependentSeekBarManager extends LinearLayout {
      * The index values correspond to the DependentSeekBar's visual location
      * (with the top bar being 0 and increasing downwards, or in horizontal left
      * being 0 and right being n-1).
-     * 
+     *
      * @param dependentIndex the index of the DependentSeekBar which must have
      *        the smaller progress
      * @param limitingIndices the indices of the DependentSeekBars which must
@@ -272,7 +272,7 @@ public class DependentSeekBarManager extends LinearLayout {
      * The index values correspond to the DependentSeekBar's visual location
      * (with the top bar being 0 and increasing downwards, or in horizontal left
      * being 0 and right being n-1).
-     * 
+     *
      * @param dependentIndex the index of the DependentSeekBar which must have
      *        the smaller progress
      * @param limitingIndices the indices of the DependentSeekBars which must
@@ -326,9 +326,9 @@ public class DependentSeekBarManager extends LinearLayout {
     /**
      * When shifting is enabled, the widget will attempt to move other seek bars
      * which are dependent on seek bar being adjusted and are blocking its path.
-     * 
+     *
      * @return true iff shifting is currently allowed
-     * 
+     *
      * @see #setShiftingAllowed(boolean)
      */
     public boolean isShiftingAllowed() {
@@ -339,9 +339,9 @@ public class DependentSeekBarManager extends LinearLayout {
      * Set the value of shifting. When shifting is enabled, the widget will
      * attempt to move other seek bars which are dependent on seek bar being
      * adjusted and are blocking its path.
-     * 
+     *
      * @param b
-     * 
+     *
      * @see #isShiftingAllowed()
      */
     public void setShiftingAllowed(boolean b) {
