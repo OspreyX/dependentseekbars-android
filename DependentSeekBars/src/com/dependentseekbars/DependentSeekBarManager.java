@@ -139,7 +139,6 @@ public class DependentSeekBarManager extends LinearLayout {
         setupMargins();
 
         return seekBar;
-
     }
 
     private void setupMargins() {
