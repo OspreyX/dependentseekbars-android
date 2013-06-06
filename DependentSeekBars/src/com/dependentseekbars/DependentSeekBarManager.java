@@ -18,9 +18,9 @@ import com.dependentseekbars.DependencyGraph.Node;
  * {@link DependentSeekBar}s. Less than and greater than relationships can be
  * created between different {@link DependentSeekBar}s, such that one
  * DependentSeekBar must always be less/greater than another.
- * 
+ *
  * @author jbeveridge and sujen
- * 
+ *
  */
 public class DependentSeekBarManager extends LinearLayout {
     private ArrayList<DependentSeekBar> seekBars;
@@ -30,11 +30,13 @@ public class DependentSeekBarManager extends LinearLayout {
     private int spacing = 0;
     private boolean shiftingAllowed = true;
 
+    private final int DEFAULT_MAXIMUM_PROGRESS = 100;
+
     /**
      * Creates a DependentSeekBarManager that can be used to contain
      * {@link DependentSeekBar}s. By default, the DependentSeekBarManager has a
      * vertical orientation.
-     * 
+     *
      * @param context the application environment
      */
     public DependentSeekBarManager(Context context) {
@@ -47,7 +49,7 @@ public class DependentSeekBarManager extends LinearLayout {
      * Creates a DependentSeekBarManager that can be used to contain
      * {@link DependentSeekBar}s. By default, the DependentSeekBarManager has a
      * vertical orientation.
-     * 
+     *
      * @param context the application environment
      * @param attrs the layout attributes
      */
@@ -57,14 +59,8 @@ public class DependentSeekBarManager extends LinearLayout {
         TypedArray a = context.obtainStyledAttributes(attrs,
                 R.styleable.DependentSeekBarManager);
 
-        String str = a.getString(R.styleable.DependentSeekBarManager_spacing);
-        if (str != null && !str.equals("")) {
-            try {
-                spacing = Integer.parseInt(str);
-            } catch (NumberFormatException e) {
+        spacing = a.getInt(R.styleable.DependentSeekBarManager_spacing, 0);
 
-            }
-        }
         a.recycle();
 
         init();
@@ -78,14 +74,8 @@ public class DependentSeekBarManager extends LinearLayout {
         TypedArray a = context.obtainStyledAttributes(attrs,
                 R.styleable.DependentSeekBarManager, defStyle, 0);
 
-        String str = a.getString(R.styleable.DependentSeekBarManager_spacing);
-        if (str != null && !str.equals("")) {
-            try {
-                spacing = Integer.parseInt(str);
-            } catch (NumberFormatException e) {
+        spacing = a.getInt(R.styleable.DependentSeekBarManager_spacing, 0);
 
-            }
-        }
         a.recycle();
 
         init();
@@ -112,25 +102,25 @@ public class DependentSeekBarManager extends LinearLayout {
      * {@link DependentSeekBar} returned will be shown at the bottom of the
      * widget if in vertical view, and on the right if in horizontal view. The
      * maximum value progress will be set to 100.
-     * 
+     *
      * @param progress the initial progress of the seek bar
      * @return the {@link DependentSeekBar} which was added to the widget
-     * 
+     *
      * @see #createSeekBar(int, int)
      */
     public DependentSeekBar createSeekBar(int progress) {
-        return createSeekBar(progress, 100);
+        return createSeekBar(progress, DEFAULT_MAXIMUM_PROGRESS);
     }
 
     /**
      * Create a new {@link DependentSeekBar} and adds it to the widget. The
      * {@link DependentSeekBar} returned will be shown at the bottom of the
      * widget if in vertical view, and on the right if in horizontal view.
-     * 
+     *
      * @param progress the initial progress of the seek bar
      * @param maximum the maximum value which the progress can be set to
      * @return the {@link DependentSeekBar} which was added to the widget
-     * 
+     *
      * @see #createSeekBar(int)
      */
     public DependentSeekBar createSeekBar(int progress, int maximum) {
@@ -149,26 +139,31 @@ public class DependentSeekBarManager extends LinearLayout {
         setupMargins();
 
         return seekBar;
-
     }
 
     private void setupMargins() {
         if (seekBars.size() > 1) {
-            ((LinearLayout.LayoutParams) seekBars.get(seekBars.size() - 2).getLayoutParams()).setMargins(
-                    0, 0, 0, spacing);
+            setSeekBarMargin(seekBars.size() - 2, spacing);
         }
-        ((LinearLayout.LayoutParams) seekBars.get(seekBars.size() - 1).getLayoutParams()).setMargins(
-                0, 0, 0, 0);
+        setSeekBarMargin(seekBars.size() - 1, 0);
+    }
+
+    private void setSeekBarMargin(int index, int space){
+        ((LinearLayout.LayoutParams) seekBars.get(index).getLayoutParams()).setMargins(
+                0, 0, 0, space);
     }
 
     /**
      * Adds a {@link DependentSeekBar} to the manager allowing the
      * {@link DependentSeekBar} to have dependency relationships with other
      * {@link DependentSeekBar}s in the manager
-     * 
+     *
      * @param seekBar
      */
     public void addSeekBar(DependentSeekBar seekBar) {
+        if(seekBars.contains(seekBar))
+            return;
+
         seekBars.add(seekBar);
 
         minDependencies.add(new ArrayList<Integer>());
@@ -193,12 +188,12 @@ public class DependentSeekBarManager extends LinearLayout {
      * being 0 and increasing downwards, or in horizontal left being 0 and right
      * being n-1). When a bar is removed, the index values of the
      * DependentSeekBars are adjusted to represent their new visual locations.
-     * 
+     *
      * @param index the index of the {@link DependentSeekBar} to remove
      * @param restructureDependencies
      * @return true iff there is a {@link DependentSeekBar} with given index and
      *         it is successfully removed
-     * 
+     *
      * @see #removeSeekBar(DependentSeekBar, boolean)
      */
     public boolean removeSeekBar(int index, boolean restructureDependencies) {
@@ -215,12 +210,12 @@ public class DependentSeekBarManager extends LinearLayout {
      * Removes the given DependentSeekBar from the widget. When a bar is
      * removed, the index values of the DependentSeekBars are adjusted to
      * represent their new visual locations.
-     * 
+     *
      * @param rsb the DependentSeekBar to remove
      * @param restructureDependencies
      * @return true iff the given DependentSeekBar is contained in the widget
      *         and it is successfully removed
-     * 
+     *
      * @see #removeSeekBar(int, boolean)
      */
     public boolean removeSeekBar(DependentSeekBar dependent,
@@ -244,7 +239,7 @@ public class DependentSeekBarManager extends LinearLayout {
      * The index values correspond to the DependentSeekBar's visual location
      * (with the top bar being 0 and increasing downwards, or in horizontal left
      * being 0 and right being n-1).
-     * 
+     *
      * @param dependentIndex the index of the DependentSeekBar which must have
      *        the smaller progress
      * @param limitingIndices the indices of the DependentSeekBars which must
@@ -254,7 +249,7 @@ public class DependentSeekBarManager extends LinearLayout {
     void addLessThanDependencies(DependentSeekBar dependentSeekBar,
             int[] limitingIndices) {
         checkIndices(limitingIndices);
-        dg.addMaxDependencies(dependentSeekBar,
+        dg.addLessThanDependencies(dependentSeekBar,
                 getSubclassedSeekBars(limitingIndices));
     }
 
@@ -265,7 +260,7 @@ public class DependentSeekBarManager extends LinearLayout {
             if (limit == null || !seekBars.contains(limit))
                 throw new NullPointerException();
         }
-        dg.addMaxDependencies(dependentSeekBar, getSubclassedSeekBars(limiting));
+        dg.addLessThanDependencies(dependentSeekBar, getSubclassedSeekBars(limiting));
     }
 
     /**
@@ -276,7 +271,7 @@ public class DependentSeekBarManager extends LinearLayout {
      * The index values correspond to the DependentSeekBar's visual location
      * (with the top bar being 0 and increasing downwards, or in horizontal left
      * being 0 and right being n-1).
-     * 
+     *
      * @param dependentIndex the index of the DependentSeekBar which must have
      *        the smaller progress
      * @param limitingIndices the indices of the DependentSeekBars which must
@@ -286,7 +281,7 @@ public class DependentSeekBarManager extends LinearLayout {
     void addGreaterThanDependencies(DependentSeekBar dependentSeekBar,
             int[] limitingIndices) {
         checkIndices(limitingIndices);
-        dg.addMinDependencies(dependentSeekBar,
+        dg.addGreaterThanDependencies(dependentSeekBar,
                 getSubclassedSeekBars(limitingIndices));
     }
 
@@ -298,7 +293,7 @@ public class DependentSeekBarManager extends LinearLayout {
                 throw new NullPointerException();
         }
 
-        dg.addMinDependencies(dependentSeekBar, getSubclassedSeekBars(limiting));
+        dg.addGreaterThanDependencies(dependentSeekBar, getSubclassedSeekBars(limiting));
     }
 
     private DependentSeekBar[] getSubclassedSeekBars(
@@ -320,7 +315,6 @@ public class DependentSeekBarManager extends LinearLayout {
         return limitingSeekBars;
     }
 
-    // TODO should we be throwing an exception or returning false?
     private void checkIndices(int[] indices) {
         for (int i = 0; i < indices.length; i++) {
             if (indices[i] >= seekBars.size() || indices[i] < 0)
@@ -331,9 +325,9 @@ public class DependentSeekBarManager extends LinearLayout {
     /**
      * When shifting is enabled, the widget will attempt to move other seek bars
      * which are dependent on seek bar being adjusted and are blocking its path.
-     * 
+     *
      * @return true iff shifting is currently allowed
-     * 
+     *
      * @see #setShiftingAllowed(boolean)
      */
     public boolean isShiftingAllowed() {
@@ -344,9 +338,9 @@ public class DependentSeekBarManager extends LinearLayout {
      * Set the value of shifting. When shifting is enabled, the widget will
      * attempt to move other seek bars which are dependent on seek bar being
      * adjusted and are blocking its path.
-     * 
+     *
      * @param b
-     * 
+     *
      * @see #isShiftingAllowed()
      */
     public void setShiftingAllowed(boolean b) {
