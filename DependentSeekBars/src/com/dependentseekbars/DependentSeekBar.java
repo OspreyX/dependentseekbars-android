@@ -1,15 +1,15 @@
 package com.dependentseekbars;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.SeekBar;
 import com.dependentseekbars.DependencyGraph.Node;
 
-/**
- * Type of {@link SeekBar} used for adding Dependencies.
- * 
- */
+/** Type of {@link SeekBar} used for adding Dependencies. */
 public class DependentSeekBar extends SeekBar {
     public static final String TAG = "DependentSeekBar";
     private DependentSeekBarManager mManager;
@@ -18,6 +18,8 @@ public class DependentSeekBar extends SeekBar {
     private int mTempProgress = -1;
     private boolean mUseTempProgress = false;
     private boolean mPauseProgressChangedListener = false;
+    private int mPreferredProgress = 0;
+    private boolean mUsePreferredProgress = false;
 
     // Used for creating output strings for recursive calls to make reading
     // easier
@@ -131,11 +133,13 @@ public class DependentSeekBar extends SeekBar {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                endShiftEvent();
                 l.onStopTrackingTouch(seekBar);
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
+                startShiftEvent();
                 l.onStartTrackingTouch(seekBar);
             }
 
@@ -165,8 +169,13 @@ public class DependentSeekBar extends SeekBar {
                 if (distance != 0) {
                     allowedMovement = canMove(distance, mOldProgress, false);
 
+
                     if ((distance < 0 && allowedMovement < 0) ||
                             (distance > 0 && allowedMovement > 0)) {
+                        // The oldProgress should be this seek bar's
+                        // preferred progress
+                        mPreferredProgress = mOldProgress;
+                        startPreferredProgressCheck(allowedMovement);
                         mOldProgress += allowedMovement;
 
                         if (mOldProgress != progress) {
@@ -229,6 +238,112 @@ public class DependentSeekBar extends SeekBar {
     }
 
     /**
+     * Tells the seek bar to record the current progress as the preferred
+     * progress and to attempt to move back to it when there are no other
+     * {@link DependentSeekBar}'s in the way.
+     *
+     * Note that this is done implicitly when {@link
+     * OnSeekBarChangeListener#onStartTrackingTouch(android.widget.SeekBar)}
+     * is called.
+     */
+    public void startShiftEvent() {
+        if (!mUsePreferredProgress) {
+            mUsePreferredProgress = true;
+            mPreferredProgress = getProgress();
+        }
+    }
+
+    /**
+     * @return true iff the seek bar currently has a preferred progress
+     */
+    public boolean inShiftEvent() {
+        return mUsePreferredProgress;
+    }
+
+    /**
+     * Tells the seek bar and all seek bars which it has relationships with to
+     * forget their preferred progress and stop attempting to move to it.
+     *
+     * Note that this is done implicitly when {@link
+     * OnSeekBarChangeListener#onStopTrackingTouch(android.widget.SeekBar)}
+     * is called.
+     */
+    public void endShiftEvent() {
+        mUsePreferredProgress = false;
+        for (Node node : mNode.getChildren()) {
+            DependentSeekBar dependent = node.getSeekBar();
+            if (dependent.inShiftEvent()) {
+                dependent.endShiftEvent();
+            }
+        }
+        for (Node node : mNode.getParents()) {
+            DependentSeekBar dependent = node.getSeekBar();
+            if (dependent.inShiftEvent()) {
+                dependent.endShiftEvent();
+            }
+        }
+    }
+
+    /**
+     * Turn off shifting so that the seek bars do not displace other seek bars
+     * which are already in their preferred positions and change it back to
+     * the previous shifting state after finishing.
+     *
+     * @param displacement the displacement of the seek bar, where negative
+     *                     corresponds to left and positive corresponds to right
+     */
+    void startPreferredProgressCheck(final int displacement) {
+        boolean shiftingAllowed = mManager.isShiftingAllowed();
+        mManager.setShiftingAllowed(false);
+        checkPreferredProgress(displacement);
+        mManager.setShiftingAllowed(shiftingAllowed);
+    }
+
+    /**
+     * Attempt to move to the preferred progress value if possible and then
+     * tell all seek bars which depend on this seek bar to check if they can
+     * move to their preferred progress values.
+     *
+     * This method should NEVER be called when manager.isShiftingAllowed() ==
+     * true, as it may end up moving bars which are already in their preferred
+     * locations.
+     *
+     * @param displacementDirection the direction of the initially moved seek
+     * bar, where negative corresponds to left and positive corresponds to
+     * right
+     */
+    void checkPreferredProgress(final int displacementDirection) {
+        if (mUsePreferredProgress && mPreferredProgress != mOldProgress) {
+            canMove(mPreferredProgress - mOldProgress, false);
+        }
+
+        /* Sort the affected nodes so that they are in ascending order if
+        parents and descending order if children. Since we do not allow
+        shifting when attempting to move to the preferred progress,
+        if we are allowing bars to move left and we try to move the bar with
+        the largest progress value first, it will not be allowed to move and
+        we will never ask it to move again, resulting in it never moving.
+        Instead, we can make sure that we move the bars with the smallest
+        progress to the left first so that they are out of the way when the
+        bars with larger progress try and move left. (Vice-versa for right) */
+        ArrayList<Node> affectedNodes =
+                displacementDirection > 0 ? mNode.getParents() :
+                mNode.getChildren();
+        Comparator<Node> comparator = new Comparator<Node>() {
+            @Override
+            public int compare(Node lhs, Node rhs) {
+                int result = Integer
+                        .signum(lhs.getProgress() - rhs.getProgress());
+                return displacementDirection > 0 ? result * -1 : result;
+            }
+        };
+        Collections.sort(affectedNodes, comparator);
+        for (Node node : affectedNodes) {
+            node.getSeekBar().checkPreferredProgress(displacementDirection);
+        }
+    }
+
+    /**
      * Behaves the same as {@link #setProgress(int)}, but will return boolean
      * which denotes whether the seek bar was able to move to the given value
      * with its dependencies.
@@ -243,11 +358,21 @@ public class DependentSeekBar extends SeekBar {
         int displacement = newProgress - curProgress;
         if (displacement == 0
                 || (displacement > 0 && canMove(displacement, curProgress,
+                true) == displacement)
+                || (displacement < 0 && canMove(displacement, curProgress,
                 true) == displacement)) {
             mTempProgress = newProgress;
             result = true;
         }
+        /* Clear the temp progress of all sliders */
         clearTempProgress(result);
+
+        /* Update preferred progress so that this seek bar does not attempt
+        to move anywhere else. */
+        mPreferredProgress = mOldProgress;
+        if (result) {
+            startPreferredProgressCheck(displacement);
+        }
         return result;
     }
 
@@ -306,6 +431,9 @@ public class DependentSeekBar extends SeekBar {
                 if (checkOnly) {
                     node.getSeekBar().useTempProgress();
                 }
+                if (mUsePreferredProgress) {
+                    node.getSeekBar().startShiftEvent();
+                }
             }
         }
 
@@ -318,9 +446,10 @@ public class DependentSeekBar extends SeekBar {
          * shifting is disabled, the current slider can only move as much as the
          * next min. dependent slider.
          */
+        int result = 0;
         if (conflicting.size() == 0 && desiredProgress <= getMax()
                 && desiredProgress >= 0) {
-            return displacement;
+            result = displacement;
         } else if (conflicting.size() != 0) {
             int allowedDisplacement = displacement;
             final int directionFactor = displacement < 0 ? -1 : 1;
@@ -349,10 +478,9 @@ public class DependentSeekBar extends SeekBar {
                                       Math.max(allowedDisplacement, temp) :
                                       Math.min(allowedDisplacement, temp);
             }
-            return allowedDisplacement;
-        } else {
-            return 0;
+            result = allowedDisplacement;
         }
+        return result;
     }
 
     private void setOutputBuffer(String newBuffer) {

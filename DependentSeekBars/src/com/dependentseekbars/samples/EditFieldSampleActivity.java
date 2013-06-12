@@ -1,6 +1,7 @@
 package com.dependentseekbars.samples;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
@@ -8,6 +9,7 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -27,7 +29,7 @@ public class EditFieldSampleActivity extends Activity {
 	private EditText[] editText;
 	private boolean validValue = true;
 	private boolean pauseTextChangeListener = false;
-	private final int ROW_LAYOUT_COUNT = 8;
+	private final int ROW_LAYOUT_COUNT = 0;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -119,7 +121,16 @@ public class EditFieldSampleActivity extends Activity {
 			public void onFocusChange(View v, boolean hasFocus) {
 				if (hasFocus) {
 					editField.setSelection(editField.getText().length());
-				}
+                    seekBar.startShiftEvent();
+				} else {
+                    seekBar.endShiftEvent();
+                }
+                if (!hasFocus && !validValue) {
+                    pauseTextChangeListener = true;
+                    editField.setTextColor(Color.BLACK);
+                    pauseTextChangeListener = false;
+                    validValue = true;
+                }
 			}
 		});
 		editField.setOnEditorActionListener(new OnEditorActionListener() {
@@ -133,6 +144,11 @@ public class EditFieldSampleActivity extends Activity {
 					pauseTextChangeListener = false;
 					validValue = true;
 				}
+                findViewById(R.id.slider_layout).requestFocus();
+                InputMethodManager imm = (InputMethodManager)getSystemService(
+                        Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromInputMethod(getWindow().getCurrentFocus
+                        ().getWindowToken(), 0);
 				return false;
 			}
 		});
