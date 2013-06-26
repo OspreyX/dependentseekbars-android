@@ -25,6 +25,11 @@ public class DependentSeekBar extends SeekBar {
     // easier
     private String outputBuffer = "";
 
+    public enum Direction {
+        LEFT,
+        RIGHT;
+    }
+
     public enum Dependency {
         LESS_THAN,
         GREATER_THAN;
@@ -175,7 +180,8 @@ public class DependentSeekBar extends SeekBar {
                         // The oldProgress should be this seek bar's
                         // preferred progress
                         mPreferredProgress = mOldProgress;
-                        startPreferredProgressCheck(allowedMovement);
+                        startPreferredProgressCheck(allowedMovement > 0 ?
+                                                    Direction.RIGHT : Direction.LEFT);
                         mOldProgress += allowedMovement;
 
                         if (mOldProgress != progress) {
@@ -224,13 +230,13 @@ public class DependentSeekBar extends SeekBar {
         mUseTempProgress = false;
 
         for (Node child : mNode.getChildren()) {
-            DependentSeekBar dependent = child.getSeekBar();
+            final DependentSeekBar dependent = child.getSeekBar();
             if (dependent.usingTempProgress()) {
                 dependent.clearTempProgress(updateBeforeClearing);
             }
         }
         for (Node parent : mNode.getParents()) {
-            DependentSeekBar dependent = parent.getSeekBar();
+            final DependentSeekBar dependent = parent.getSeekBar();
             if (dependent.usingTempProgress()) {
                 dependent.clearTempProgress(updateBeforeClearing);
             }
@@ -289,13 +295,12 @@ public class DependentSeekBar extends SeekBar {
      * which are already in their preferred positions and change it back to
      * the previous shifting state after finishing.
      *
-     * @param displacement the displacement of the seek bar, where negative
-     *                     corresponds to left and positive corresponds to right
+     * @param direction the displacement of the seek bar
      */
-    void startPreferredProgressCheck(final int displacement) {
+    void startPreferredProgressCheck(final Direction direction) {
         boolean shiftingAllowed = mManager.isShiftingAllowed();
         mManager.setShiftingAllowed(false);
-        checkPreferredProgress(displacement);
+        checkPreferredProgress(direction);
         mManager.setShiftingAllowed(shiftingAllowed);
     }
 
@@ -308,11 +313,14 @@ public class DependentSeekBar extends SeekBar {
      * true, as it may end up moving bars which are already in their preferred
      * locations.
      *
-     * @param displacementDirection the direction of the initially moved seek
-     * bar, where negative corresponds to left and positive corresponds to
-     * right
+     * @param direction the direction of the initially moved seek bar
      */
-    void checkPreferredProgress(final int displacementDirection) {
+    void checkPreferredProgress(final Direction direction) {
+        /*This method should NEVER be called when manager.isShiftingAllowed() is
+        true, as it may end up moving bars which are already in their preferred
+        locations. */
+        assert(mManager.isShiftingAllowed() == false);
+
         if (mUsePreferredProgress && mPreferredProgress != mOldProgress) {
             canMove(mPreferredProgress - mOldProgress, false);
         }
@@ -327,19 +335,19 @@ public class DependentSeekBar extends SeekBar {
         progress to the left first so that they are out of the way when the
         bars with larger progress try and move left. (Vice-versa for right) */
         ArrayList<Node> affectedNodes =
-                displacementDirection > 0 ? mNode.getParents() :
+                direction == Direction.RIGHT ? mNode.getParents() :
                 mNode.getChildren();
         Comparator<Node> comparator = new Comparator<Node>() {
             @Override
             public int compare(Node lhs, Node rhs) {
                 int result = Integer
                         .signum(lhs.getProgress() - rhs.getProgress());
-                return displacementDirection > 0 ? result * -1 : result;
+                return direction == Direction.RIGHT ? result * -1 : result;
             }
         };
         Collections.sort(affectedNodes, comparator);
         for (Node node : affectedNodes) {
-            node.getSeekBar().checkPreferredProgress(displacementDirection);
+            node.getSeekBar().checkPreferredProgress(direction);
         }
     }
 
@@ -371,7 +379,8 @@ public class DependentSeekBar extends SeekBar {
         to move anywhere else. */
         mPreferredProgress = mOldProgress;
         if (result) {
-            startPreferredProgressCheck(displacement);
+            startPreferredProgressCheck(displacement > 0 ? Direction.RIGHT :
+                                        Direction.LEFT);
         }
         return result;
     }
@@ -427,12 +436,13 @@ public class DependentSeekBar extends SeekBar {
             if ((displacement < 0 && node.getProgress() >= desiredProgress) ||
                     (displacement > 0 && node.getProgress() <= desiredProgress)) {
                 conflicting.add(node);
-                node.getSeekBar().setOutputBuffer(outputBuffer + "\t");
+                final DependentSeekBar seekBar = node.getSeekBar();
+                seekBar.setOutputBuffer(outputBuffer + "\t");
                 if (checkOnly) {
-                    node.getSeekBar().useTempProgress();
+                    seekBar.useTempProgress();
                 }
                 if (mUsePreferredProgress) {
-                    node.getSeekBar().startShiftEvent();
+                    seekBar.startShiftEvent();
                 }
             }
         }
