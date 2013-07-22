@@ -30,6 +30,8 @@ public class DependencyGraph {
     public final static int CHECK_GT_DEPENDENCIES = 1;
     public final static int CHECK_LT_DEPENDENCIES = 2;
 
+    private final boolean DEBUG = false;
+
     public DependencyGraph() {
         nodes = new ArrayList<Node>();
     }
@@ -95,11 +97,13 @@ public class DependencyGraph {
     private void addLessThanDependency(DependentSeekBar dependent,
             DependentSeekBar child) throws InconsistentGraphException {
         Node dependNode = null, childNode = null;
-        Log.d("DependencyGraph", "addMaxDependency: size of nodes array="
-                + nodes.size());
-        Log.d("DependencyGraph",
-                "addMaxDependency: adding " + dependent.getProgress() + " < "
-                        + child.getProgress());
+        if (DEBUG) {
+            Log.d("DependencyGraph", "addMaxDependency: size of nodes array="
+                    + nodes.size());
+            Log.d("DependencyGraph",
+                    "addMaxDependency: adding " + dependent.getProgress()
+                            + " < " + child.getProgress());
+        }
         for (Node node : nodes) {
             if (dependNode == null && node.sameSeekBar(dependent)) {
                 dependNode = node;
@@ -160,11 +164,13 @@ public class DependencyGraph {
      */
     private void addGreaterThanDependency(DependentSeekBar dependent,
             DependentSeekBar parent) throws InconsistentGraphException {
-        Log.d("DependencyGraph", "addMinDependency: size of nodes array="
-                + nodes.size());
-        Log.d("DependencyGraph",
-                "addMinDependency: adding " + dependent.getProgress() + " > "
-                        + parent.getProgress());
+        if (DEBUG) {
+            Log.d("DependencyGraph", "addMinDependency: size of nodes array="
+                    + nodes.size());
+            Log.d("DependencyGraph",
+                    "addMinDependency: adding " + dependent.getProgress()
+                            + " > " + parent.getProgress());
+        }
         Node dependNode = null, parentNode = null;
 
         // Searching for the dependNode and limitNode which correspond to
@@ -331,7 +337,9 @@ public class DependencyGraph {
         }
 
         private boolean sameSeekBar(DependentSeekBar other) {
-            Log.d("DependencyGraph", "sameSeekBar: " + seekBar.getProgress()
+            if (DEBUG)
+                Log.d("DependencyGraph",
+                        "sameSeekBar: " + seekBar.getProgress()
                     + " " + other.getProgress());
             return seekBar.equals(other);
         }
