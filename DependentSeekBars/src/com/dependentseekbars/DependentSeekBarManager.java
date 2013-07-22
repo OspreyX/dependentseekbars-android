@@ -2,12 +2,7 @@ package com.dependentseekbars;
 
 import java.util.ArrayList;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.res.TypedArray;
-import android.os.Build;
-import android.util.AttributeSet;
-import android.widget.LinearLayout;
 
 import com.dependentseekbars.DependencyGraph.Node;
 
@@ -22,12 +17,11 @@ import com.dependentseekbars.DependencyGraph.Node;
  * @author jbeveridge and sujen
  *
  */
-public class DependentSeekBarManager extends LinearLayout {
+public class DependentSeekBarManager{
     private ArrayList<DependentSeekBar> seekBars;
     private ArrayList<ArrayList<Integer>> minDependencies;
     private ArrayList<ArrayList<Integer>> maxDependencies;
     private DependencyGraph dg;
-    private int spacing = 0;
     private boolean shiftingAllowed = true;
 
     private final int DEFAULT_MAXIMUM_PROGRESS = 100;
@@ -39,92 +33,41 @@ public class DependentSeekBarManager extends LinearLayout {
      *
      * @param context the application environment
      */
-    public DependentSeekBarManager(Context context) {
-        super(context);
-
-        init();
-    }
-
-    /**
-     * Creates a DependentSeekBarManager that can be used to contain
-     * {@link DependentSeekBar}s. By default, the DependentSeekBarManager has a
-     * vertical orientation.
-     *
-     * @param context the application environment
-     * @param attrs the layout attributes
-     */
-    public DependentSeekBarManager(Context context, AttributeSet attrs) {
-        super(context, attrs);
-
-        TypedArray a = context.obtainStyledAttributes(attrs,
-                R.styleable.DependentSeekBarManager);
-
-        spacing = a.getInt(R.styleable.DependentSeekBarManager_spacing, 0);
-
-        a.recycle();
-
-        init();
-    }
-
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public DependentSeekBarManager(Context context, AttributeSet attrs,
-            int defStyle) {
-        super(context, attrs, defStyle);
-
-        TypedArray a = context.obtainStyledAttributes(attrs,
-                R.styleable.DependentSeekBarManager, defStyle, 0);
-
-        spacing = a.getInt(R.styleable.DependentSeekBarManager_spacing, 0);
-
-        a.recycle();
-
-        init();
-    }
-
-    private void init() {
+    public DependentSeekBarManager() {
         seekBars = new ArrayList<DependentSeekBar>();
         minDependencies = new ArrayList<ArrayList<Integer>>();
         maxDependencies = new ArrayList<ArrayList<Integer>>();
         dg = new DependencyGraph();
-
-        setOrientation(LinearLayout.VERTICAL);
-
-        if (isInEditMode()) {
-            for (int i = 0; i < 20; i++) {
-                createSeekBar(i);
-            }
-
-        }
     }
 
     /**
-     * Create a new {@link DependentSeekBar} and adds it to the widget. The
-     * {@link DependentSeekBar} returned will be shown at the bottom of the
-     * widget if in vertical view, and on the right if in horizontal view. The
-     * maximum value progress will be set to 100.
+     * Create a new {@link DependentSeekBar} and adds it to the
+     * DependentSeekBarManager. The maximum value progress will be set to 100.
      *
+     * @param context the {@link Context} the view is running in
      * @param progress the initial progress of the seek bar
-     * @return the {@link DependentSeekBar} which was added to the widget
+     * @return the {@link DependentSeekBar} which was added to the manager
      *
      * @see #createSeekBar(int, int)
      */
-    public DependentSeekBar createSeekBar(int progress) {
-        return createSeekBar(progress, DEFAULT_MAXIMUM_PROGRESS);
+    public DependentSeekBar createSeekBar(Context context, int progress) {
+        return createSeekBar(context, progress, DEFAULT_MAXIMUM_PROGRESS);
     }
 
     /**
-     * Create a new {@link DependentSeekBar} and adds it to the widget. The
-     * {@link DependentSeekBar} returned will be shown at the bottom of the
-     * widget if in vertical view, and on the right if in horizontal view.
+     * Create a new {@link DependentSeekBar} and adds it to this
+     * DependentSeekBarManager.
      *
+     * @param context the {@link Context} the view is running in
      * @param progress the initial progress of the seek bar
      * @param maximum the maximum value which the progress can be set to
-     * @return the {@link DependentSeekBar} which was added to the widget
+     * @return the {@link DependentSeekBar} which was added to the manager
      *
      * @see #createSeekBar(int)
      */
-    public DependentSeekBar createSeekBar(int progress, int maximum) {
-        DependentSeekBar seekBar = new DependentSeekBar(getContext(), this,
+    public DependentSeekBar createSeekBar(Context context, int progress,
+            int maximum) {
+        DependentSeekBar seekBar = new DependentSeekBar(context, this,
                 progress, maximum);
         seekBars.add(seekBar);
 
@@ -135,22 +78,7 @@ public class DependentSeekBarManager extends LinearLayout {
         Node node = dg.addSeekBar(seekBar);
         seekBar.setNode(node);
 
-        addView(seekBar);
-        setupMargins();
-
         return seekBar;
-    }
-
-    private void setupMargins() {
-        if (seekBars.size() > 1) {
-            setSeekBarMargin(seekBars.size() - 2, spacing);
-        }
-        setSeekBarMargin(seekBars.size() - 1, 0);
-    }
-
-    private void setSeekBarMargin(int index, int space){
-        ((LinearLayout.LayoutParams) seekBars.get(index).getLayoutParams()).setMargins(
-                0, 0, 0, space);
     }
 
     /**
@@ -183,16 +111,17 @@ public class DependentSeekBarManager extends LinearLayout {
     }
 
     /**
-     * Removes the DependentSeekBar at index from the widget. The index values
-     * correspond to the DependentSeekBar's visual location (with the top bar
-     * being 0 and increasing downwards, or in horizontal left being 0 and right
-     * being n-1). When a bar is removed, the index values of the
-     * DependentSeekBars are adjusted to represent their new visual locations.
+     * Removes the {@link DependentSeekBar} at index from this
+     * DependentSeekBarManager. The index values correspond to the order in
+     * which the DependentSeekBar's were added. When a DependentSeekBar is
+     * removed, the index values of the DependentSeekBars are adjusted to
+     * represent their order (DependentSeekBars after the one removed will have
+     * their index shifted down by 1).
      *
      * @param index the index of the {@link DependentSeekBar} to remove
      * @param restructureDependencies
-     * @return true iff there is a {@link DependentSeekBar} with given index and
-     *         it is successfully removed
+     * @return true if and only if there is a {@link DependentSeekBar} with
+     *         given index and it is successfully removed
      *
      * @see #removeSeekBar(DependentSeekBar, boolean)
      */
@@ -202,19 +131,20 @@ public class DependentSeekBarManager extends LinearLayout {
 
         dg.removeSeekBar(seekBars.get(index), restructureDependencies);
         seekBars.remove(index);
-        setupMargins();
         return true;
     }
 
     /**
-     * Removes the given DependentSeekBar from the widget. When a bar is
-     * removed, the index values of the DependentSeekBars are adjusted to
-     * represent their new visual locations.
+     * Removes the given {@link DependentSeekBar} from the
+     * DependentSeekBarManager. When a DependentSeekBar is removed, the index
+     * values of the DependentSeekBars are adjusted to represent their order
+     * (DependentSeekBars after the one removed will have their index shifted
+     * down by 1).
      *
-     * @param rsb the DependentSeekBar to remove
+     * @param dependent the DependentSeekBar to remove
      * @param restructureDependencies
-     * @return true iff the given DependentSeekBar is contained in the widget
-     *         and it is successfully removed
+     * @return true if and only if the given DependentSeekBar is contained in
+     *         the manager and it is successfully removed
      *
      * @see #removeSeekBar(int, boolean)
      */
@@ -224,7 +154,6 @@ public class DependentSeekBarManager extends LinearLayout {
             if (seekBar.equals(dependent)) {
                 dg.removeSeekBar(dependent, restructureDependencies);
                 seekBars.remove(seekBar);
-                setupMargins();
                 return true;
             }
         }
@@ -232,13 +161,12 @@ public class DependentSeekBarManager extends LinearLayout {
     }
 
     /**
-     * Add dependencies between the DependentSeekBar at dependentIndex and the
-     * DependentSeekBars at limitingIndices. The dependencies will ensure that
-     * the progress of the DependentSeekBar at dependentIndex is always less
-     * than the progress of the DependentSeekBars at each of limitingIndices.
-     * The index values correspond to the DependentSeekBar's visual location
-     * (with the top bar being 0 and increasing downwards, or in horizontal left
-     * being 0 and right being n-1).
+     * Add dependencies between the {@link DependentSeekBar} at dependentIndex
+     * and the DependentSeekBars at limitingIndices. The dependencies will
+     * ensure that the progress of the DependentSeekBar at dependentIndex is
+     * always less than the progress of the DependentSeekBars at each of
+     * limitingIndices. The index values correspond to the order in which the
+     * DependentSeekBar's were added.
      *
      * @param dependentIndex the index of the DependentSeekBar which must have
      *        the smaller progress
@@ -264,13 +192,12 @@ public class DependentSeekBarManager extends LinearLayout {
     }
 
     /**
-     * Add dependencies between the DependentSeekBar at dependentIndex and the
-     * DependentSeekBars at limitingIndices. The dependencies will ensure that
-     * the progress of the DependentSeekBar at dependentIndex is always greater
-     * than the progress of the DependentSeekBars at each of limitingIndices.
-     * The index values correspond to the DependentSeekBar's visual location
-     * (with the top bar being 0 and increasing downwards, or in horizontal left
-     * being 0 and right being n-1).
+     * Add dependencies between the {@link DependentSeekBar} at dependentIndex
+     * and the DependentSeekBars at limitingIndices. The dependencies will
+     * ensure that the progress of the DependentSeekBar at dependentIndex is
+     * always greater than the progress of the DependentSeekBars at each of
+     * limitingIndices. The index values correspond to the order in which the
+     * DependentSeekBar's were added.
      *
      * @param dependentIndex the index of the DependentSeekBar which must have
      *        the smaller progress
@@ -323,8 +250,9 @@ public class DependentSeekBarManager extends LinearLayout {
     }
 
     /**
-     * When shifting is enabled, the widget will attempt to move other seek bars
-     * which are dependent on seek bar being adjusted and are blocking its path.
+     * When shifting is enabled, the DependentSeekBarManager will attempt to
+     * move other seek bars which are dependent on seek bar being adjusted and
+     * are blocking its path.
      *
      * @return true iff shifting is currently allowed
      *
@@ -335,9 +263,9 @@ public class DependentSeekBarManager extends LinearLayout {
     }
 
     /**
-     * Set the value of shifting. When shifting is enabled, the widget will
-     * attempt to move other seek bars which are dependent on seek bar being
-     * adjusted and are blocking its path.
+     * Set the value of shifting. When shifting is enabled, the
+     * DependentSeekBarManager will attempt to move other seek bars which are
+     * dependent on seek bar being adjusted and are blocking its path.
      *
      * @param b
      *
