@@ -7,6 +7,7 @@ import java.util.Comparator;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.SeekBar;
+
 import com.dependentseekbars.DependencyGraph.Node;
 
 /** Type of {@link SeekBar} used for adding Dependencies. */
@@ -20,10 +21,6 @@ public class DependentSeekBar extends SeekBar {
     private boolean mPauseProgressChangedListener = false;
     private int mPreferredProgress = 0;
     private boolean mUsePreferredProgress = false;
-
-    // Used for creating output strings for recursive calls to make reading
-    // easier
-    private String outputBuffer = "";
 
     public enum Direction {
         LEFT,
@@ -39,7 +36,7 @@ public class DependentSeekBar extends SeekBar {
      * Creates a DependentSeekBar, and adds it to the provided
      * {@link DependentSeekBarManager}. Sets the seek bar's progress and maximum
      * progress as well.
-     * 
+     *
      * @param context
      * @param manager The {@link DependentSeekBarManager} that this
      *        DependentSeekBar will be added to.
@@ -114,7 +111,7 @@ public class DependentSeekBar extends SeekBar {
     /**
      * Sets node from the dependency graph which references this
      * DependentSeekBar.
-     * 
+     *
      * @param n the node from the dependency graph
      */
     void setNode(Node n) {
@@ -164,8 +161,6 @@ public class DependentSeekBar extends SeekBar {
                     l.onProgressChanged(seekBar, progress, fromUser);
                     return;
                 }
-
-                outputBuffer = "";
 
                 // If the new progress isn't the same as the old one and
                 // movement is allowed in that direction,
@@ -391,7 +386,7 @@ public class DependentSeekBar extends SeekBar {
      * the seekBar iff checkOnly is false and returns the amount that it
      * has changed by (or the amount that it is able to change by iff
      * checkOnly is true).
-     * 
+     *
      * @param displacement the distance the seek bar is being requested to move
      *        right
      * @return 0 when it cannot move. An integer representing the amount it
@@ -437,7 +432,6 @@ public class DependentSeekBar extends SeekBar {
                     (displacement > 0 && node.getProgress() <= desiredProgress)) {
                 conflicting.add(node);
                 final DependentSeekBar seekBar = node.getSeekBar();
-                seekBar.setOutputBuffer(outputBuffer + "\t");
                 if (checkOnly) {
                     seekBar.useTempProgress();
                 }
@@ -491,10 +485,6 @@ public class DependentSeekBar extends SeekBar {
             result = allowedDisplacement;
         }
         return result;
-    }
-
-    private void setOutputBuffer(String newBuffer) {
-        outputBuffer = newBuffer;
     }
 
     /**
