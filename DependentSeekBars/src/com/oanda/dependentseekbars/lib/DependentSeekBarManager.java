@@ -1,10 +1,10 @@
-package com.dependentseekbars;
+package com.oanda.dependentseekbars.lib;
 
 import java.util.ArrayList;
 
 import android.content.Context;
 
-import com.dependentseekbars.DependencyGraph.Node;
+import com.oanda.dependentseekbars.lib.DependencyGraph.Node;
 
 /**
  * A DependentSeekBarManager is a collection of {@link DependentSeekBar}s which

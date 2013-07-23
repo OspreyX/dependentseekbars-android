@@ -1,4 +1,4 @@
-package com.dependentseekbars;
+package com.oanda.dependentseekbars.lib;
 
 import java.util.ArrayList;
 

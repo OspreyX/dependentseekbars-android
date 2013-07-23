@@ -1,4 +1,4 @@
-package com.dependentseekbars;
+package com.oanda.dependentseekbars.lib;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,7 +8,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.SeekBar;
 
-import com.dependentseekbars.DependencyGraph.Node;
+import com.oanda.dependentseekbars.lib.DependencyGraph.Node;
 
 /** Type of {@link SeekBar} used for adding Dependencies. */
 public class DependentSeekBar extends SeekBar {
