@@ -1,11 +1,18 @@
 package com.oanda.dependentseekbars.test;
 
-import org.codehaus.plexus.context.Context;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+
+import android.content.Context;
 
 import com.oanda.dependentseekbars.lib.DependencyGraph;
 import com.oanda.dependentseekbars.lib.DependencyGraph.InconsistentGraphException;
@@ -18,30 +25,30 @@ public class DependencyGraphTest {
 
     private final int NUM_NODES = 4;
     private DependencyGraph dg;
-    private DependentSeekBarManager rsw;
+    private DependentSeekBarManager manager;
     private Context context;
     private ArrayList<Node> nodes;
     private ArrayList<DependentSeekBar> seekBars;
     private Method isAcyclicMethod;
 
-	@Before
-	public void setup() {
+    @Before
+    public void setup() {
 
-		DependentSeekBar dsb;
+        DependentSeekBar dsb;
 
-		context = Robolectric.getShadowApplication().getApplicationContext();
+        context = Robolectric.getShadowApplication().getApplicationContext();
 
-		dg = new DependencyGraph();
-		rsw = new DependentSeekBarManager(context);
-		nodes = new ArrayList<Node>();
-		seekBars = new ArrayList<DependentSeekBar>();
+        dg = new DependencyGraph();
+        manager = new DependentSeekBarManager();
+        nodes = new ArrayList<Node>();
+        seekBars = new ArrayList<DependentSeekBar>();
 
-		// Create Nodes in DependencyGraph, need to explicitly create SSB so
+        // Create Nodes in DependencyGraph, need to explicitly create SSB so
         for (int i = 0; i < NUM_NODES; i++) {
-			dsb = rsw.createSeekBar(i);
-			nodes.add(dg.addSeekBar(dsb));
-			seekBars.add(dsb);
-		}
+            dsb = manager.createSeekBar(context, i);
+            nodes.add(dg.addSeekBar(dsb));
+            seekBars.add(dsb);
+        }
 
         // set isAcycilic() to public so it can be tested
         try {
@@ -54,34 +61,34 @@ public class DependencyGraphTest {
             e.printStackTrace();
         }
 
-	}
+    }
 
-	// removes all dependencies in a graph
-	private void resetGraph() {
-		DependentSeekBar dsb;
-		dg = new DependencyGraph();
-		nodes.clear();
+    // removes all dependencies in a graph
+    private void resetGraph() {
+        DependentSeekBar dsb;
+        dg = new DependencyGraph();
+        nodes.clear();
         for (int i = 0; i < NUM_NODES; i++) {
-			dsb = seekBars.get(i);
-			nodes.add(dg.addSeekBar(dsb));
-		}
-	}
+            dsb = seekBars.get(i);
+            nodes.add(dg.addSeekBar(dsb));
+        }
+    }
 
-	// TODO this may not run first as JUnit does not guarantee execution order
-	@Test
-	public void testSetup() throws Exception {
+    // TODO this may not run first as JUnit does not guarantee execution order
+    @Test
+    public void testSetup() throws Exception {
 
         assertEquals(nodes.size(), NUM_NODES);
 
         for (int i = 0; i < NUM_NODES; i++) {
-			assertEquals(nodes.get(i).getParents().size(), 0);
-			assertEquals(nodes.get(i).getChildren().size(), 0);
-            assertFalse((boolean) isAcyclicMethod.invoke(dg, nodes.get(i),
-                    DependencyGraph.CHECK_LT_DEPENDENCIES));
-            assertFalse((boolean) isAcyclicMethod.invoke(dg, nodes.get(i),
-                    DependencyGraph.CHECK_GT_DEPENDENCIES));
-		}
-	}
+            assertEquals(nodes.get(i).getParents().size(), 0);
+            assertEquals(nodes.get(i).getChildren().size(), 0);
+            assertFalse(((Boolean) isAcyclicMethod.invoke(dg, nodes.get(i),
+                    DependencyGraph.CHECK_LT_DEPENDENCIES)).booleanValue());
+            assertFalse(((Boolean) isAcyclicMethod.invoke(dg, nodes.get(i),
+                    DependencyGraph.CHECK_GT_DEPENDENCIES)).booleanValue());
+        }
+    }
 
     /*
      * Adds dependencies and passes when: InconsistentStateException is not
@@ -279,5 +286,4 @@ public class DependencyGraphTest {
         dg.addGreaterThanDependencies(nodes.get(3).getSeekBar(),
                 limitingSeekBar0);
     }
-
 }
