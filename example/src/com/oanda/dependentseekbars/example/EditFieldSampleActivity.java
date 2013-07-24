@@ -18,7 +18,6 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
-import com.dependentseekbars.R;
 import com.oanda.dependentseekbars.lib.DependentSeekBar;
 import com.oanda.dependentseekbars.lib.DependentSeekBarManager;
 

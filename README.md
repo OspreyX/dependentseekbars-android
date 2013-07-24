@@ -1,9 +1,9 @@
 #DependentSeekBars for Android
 ***
 
-DependentSeekBars is a library that allows Android SeekBars to have relationships amongst each other. For example, you can have one SeekBar's progress always be less than another's. DependentSeekBars aims to take care of this restriction logic for you making it easier.
+DependentSeekBars is a library that allows Android SeekBars to have relationships amongst each other. For example, you can have one SeekBar's progress always be less than another's. DependentSeekBars aims to take care of this restriction logic for you, making it easier.
 
-A DependentSeekBar is a superset of a SeekBar, so you would use a DependentSeekBar the same exact way you would use a SeekBar.
+A DependentSeekBar is a superset of a SeekBar, allowing you to use a DependentSeekBar the same exact way you would use a SeekBar.
 
 Usage
 -----

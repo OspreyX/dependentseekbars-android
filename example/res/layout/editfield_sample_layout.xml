@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/slider_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:paddingTop="6dp" >
+
+        <com.oanda.dependentseekbars.lib.DependentSeekBar
+            android:id="@+id/seekBar1"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@+id/editText1" />
+
+        <EditText
+            android:id="@+id/editText1"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="8dp"
+            android:inputType="number"
+            android:maxLength="4" >
+        </EditText>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:paddingTop="6dp" >
+
+        <com.oanda.dependentseekbars.lib.DependentSeekBar
+            android:id="@+id/seekBar2"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@+id/editText2" />
+
+        <EditText
+            android:id="@+id/editText2"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="8dp"
+            android:inputType="number"
+            android:maxLength="4" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:paddingTop="6dp" >
+
+        <com.oanda.dependentseekbars.lib.DependentSeekBar
+            android:id="@+id/seekBar3"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@+id/editText3" />
+
+        <EditText
+            android:id="@+id/editText3"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="8dp"
+            android:inputType="number"
+            android:maxLength="4" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:paddingTop="6dp" >
+
+        <com.oanda.dependentseekbars.lib.DependentSeekBar
+            android:id="@+id/seekBar4"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@+id/editText4" />
+
+        <EditText
+            android:id="@+id/editText4"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="8dp"
+            android:inputType="number"
+            android:maxLength="4" />
+    </RelativeLayout>
+</LinearLayout>

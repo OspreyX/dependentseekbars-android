@@ -73,11 +73,7 @@ public class TaskSchedulerActivity extends Activity {
     }
 
     public void onToggleClicked(View view) {
-        final boolean on = ((ToggleButton) view).isChecked();
-        if (on) {
-            manager.setShiftingAllowed(true);
-        } else {
-            manager.setShiftingAllowed(false);
-        }
+        final ToggleButton shiftingToggle = ((ToggleButton) view);
+        manager.setShiftingAllowed(shiftingToggle.isChecked());
     }
 }
